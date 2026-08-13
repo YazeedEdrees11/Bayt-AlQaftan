@@ -1,0 +1,351 @@
+import type { Permission, UserRole } from "@/types/auth";
+
+/**
+ * The single source of truth for permission identifiers.
+ * Future modules add entries here and to the `Permission` union in
+ * `types/auth.ts`, then map them onto roles in `ROLE_PERMISSIONS` below.
+ */
+export const PERMISSIONS = {
+  VIEW_DASHBOARD: "VIEW_DASHBOARD",
+
+  VIEW_PRODUCTS: "VIEW_PRODUCTS",
+  CREATE_PRODUCTS: "CREATE_PRODUCTS",
+  UPDATE_PRODUCTS: "UPDATE_PRODUCTS",
+  DELETE_PRODUCTS: "DELETE_PRODUCTS",
+
+  VIEW_INVENTORY: "VIEW_INVENTORY",
+  MANAGE_INVENTORY: "MANAGE_INVENTORY",
+
+  VIEW_SUPPLIERS: "VIEW_SUPPLIERS",
+  CREATE_SUPPLIERS: "CREATE_SUPPLIERS",
+  UPDATE_SUPPLIERS: "UPDATE_SUPPLIERS",
+  DELETE_SUPPLIERS: "DELETE_SUPPLIERS",
+  /** Umbrella permission: activate/deactivate and other supplier admin. */
+  MANAGE_SUPPLIERS: "MANAGE_SUPPLIERS",
+
+  VIEW_PURCHASES: "VIEW_PURCHASES",
+  CREATE_PURCHASES: "CREATE_PURCHASES",
+  UPDATE_PURCHASES: "UPDATE_PURCHASES",
+  CANCEL_PURCHASES: "CANCEL_PURCHASES",
+
+  VIEW_SUPPLIER_BALANCES: "VIEW_SUPPLIER_BALANCES",
+  CREATE_SUPPLIER_PAYMENTS: "CREATE_SUPPLIER_PAYMENTS",
+
+  VIEW_SALES: "VIEW_SALES",
+  CREATE_SALES: "CREATE_SALES",
+  UPDATE_SALES: "UPDATE_SALES",
+  CANCEL_SALES: "CANCEL_SALES",
+
+  VIEW_CUSTOMERS: "VIEW_CUSTOMERS",
+  CREATE_CUSTOMERS: "CREATE_CUSTOMERS",
+  UPDATE_CUSTOMERS: "UPDATE_CUSTOMERS",
+  DELETE_CUSTOMERS: "DELETE_CUSTOMERS",
+  /** Umbrella: activate/deactivate and other customer admin. */
+  MANAGE_CUSTOMERS: "MANAGE_CUSTOMERS",
+
+  VIEW_CUSTOMER_BALANCES: "VIEW_CUSTOMER_BALANCES",
+  CREATE_CUSTOMER_PAYMENTS: "CREATE_CUSTOMER_PAYMENTS",
+
+  /** Per-sale profit figures. Distinct from VIEW_PROFIT_REPORTS. */
+  VIEW_PROFIT: "VIEW_PROFIT",
+
+  VIEW_RETURNS: "VIEW_RETURNS",
+  CREATE_RETURNS: "CREATE_RETURNS",
+  CANCEL_RETURNS: "CANCEL_RETURNS",
+  /** Paying money back out — cash, transfer or store credit. */
+  CREATE_REFUNDS: "CREATE_REFUNDS",
+  /** The money side of a return: refund value and what has been paid back. */
+  VIEW_RETURN_VALUES: "VIEW_RETURN_VALUES",
+
+  VIEW_EXCHANGES: "VIEW_EXCHANGES",
+  CREATE_EXCHANGES: "CREATE_EXCHANGES",
+  CANCEL_EXCHANGES: "CANCEL_EXCHANGES",
+
+  VIEW_INVENTORY_ADJUSTMENTS: "VIEW_INVENTORY_ADJUSTMENTS",
+  CREATE_INVENTORY_ADJUSTMENTS: "CREATE_INVENTORY_ADJUSTMENTS",
+  CANCEL_INVENTORY_ADJUSTMENTS: "CANCEL_INVENTORY_ADJUSTMENTS",
+
+  VIEW_FINANCE: "VIEW_FINANCE",
+  MANAGE_FINANCE: "MANAGE_FINANCE",
+
+  VIEW_FINANCIAL_TRANSACTIONS: "VIEW_FINANCIAL_TRANSACTIONS",
+  VIEW_ACCOUNTS: "VIEW_ACCOUNTS",
+  /** Creating or renaming an account rewrites where money is held. ADMIN only. */
+  CREATE_ACCOUNT: "CREATE_ACCOUNT",
+  UPDATE_ACCOUNT: "UPDATE_ACCOUNT",
+
+  VIEW_EXPENSES: "VIEW_EXPENSES",
+  CREATE_EXPENSE: "CREATE_EXPENSE",
+  UPDATE_EXPENSE: "UPDATE_EXPENSE",
+  CANCEL_EXPENSE: "CANCEL_EXPENSE",
+
+  CREATE_TRANSFER: "CREATE_TRANSFER",
+  VIEW_RECEIVABLES: "VIEW_RECEIVABLES",
+  VIEW_PAYABLES: "VIEW_PAYABLES",
+  /** Hand-correcting the ledger can make the books say anything. ADMIN only. */
+  CREATE_FINANCIAL_ADJUSTMENT: "CREATE_FINANCIAL_ADJUSTMENT",
+
+  VIEW_REPORTS: "VIEW_REPORTS",
+  VIEW_PROFIT_REPORTS: "VIEW_PROFIT_REPORTS",
+
+  VIEW_SALES_REPORT: "VIEW_SALES_REPORT",
+  VIEW_PURCHASE_REPORT: "VIEW_PURCHASE_REPORT",
+  VIEW_INVENTORY_REPORT: "VIEW_INVENTORY_REPORT",
+  VIEW_PROFIT_REPORT: "VIEW_PROFIT_REPORT",
+  VIEW_EXPENSE_REPORT: "VIEW_EXPENSE_REPORT",
+  VIEW_CUSTOMER_REPORT: "VIEW_CUSTOMER_REPORT",
+  VIEW_SUPPLIER_REPORT: "VIEW_SUPPLIER_REPORT",
+  VIEW_CASH_FLOW: "VIEW_CASH_FLOW",
+  VIEW_DAILY_CLOSING: "VIEW_DAILY_CLOSING",
+  /** Cross-cutting management KPIs, growth and alerts. */
+  VIEW_FINANCIAL_ANALYTICS: "VIEW_FINANCIAL_ANALYTICS",
+  /** Downloading report data. Separate from viewing it (§64). */
+  EXPORT_REPORTS: "EXPORT_REPORTS",
+
+  MANAGE_USERS: "MANAGE_USERS",
+
+  MANAGE_SETTINGS: "MANAGE_SETTINGS",
+
+  /** Reading the trail is its own privilege: it shows what everyone else did. */
+  VIEW_AUDIT_LOG: "VIEW_AUDIT_LOG",
+  VIEW_NOTIFICATIONS: "VIEW_NOTIFICATIONS",
+} as const satisfies Record<Permission, Permission>;
+
+/** Every permission as a flat list — used to grant ADMIN full access. */
+export const ALL_PERMISSIONS = Object.values(PERMISSIONS) as Permission[];
+
+/**
+ * MANAGER: runs day-to-day store operations.
+ * No user management, no finance, no system settings.
+ */
+const MANAGER_PERMISSIONS: Permission[] = [
+  PERMISSIONS.VIEW_DASHBOARD,
+
+  PERMISSIONS.VIEW_PRODUCTS,
+  PERMISSIONS.CREATE_PRODUCTS,
+  PERMISSIONS.UPDATE_PRODUCTS,
+  PERMISSIONS.DELETE_PRODUCTS,
+
+  PERMISSIONS.VIEW_INVENTORY,
+  PERMISSIONS.MANAGE_INVENTORY,
+
+  PERMISSIONS.VIEW_SUPPLIERS,
+  PERMISSIONS.CREATE_SUPPLIERS,
+  PERMISSIONS.UPDATE_SUPPLIERS,
+  PERMISSIONS.MANAGE_SUPPLIERS,
+  // DELETE_SUPPLIERS stays with ADMIN — suppliers are deactivated, not removed.
+
+  PERMISSIONS.VIEW_PURCHASES,
+  PERMISSIONS.CREATE_PURCHASES,
+  PERMISSIONS.UPDATE_PURCHASES,
+  PERMISSIONS.CANCEL_PURCHASES,
+
+  PERMISSIONS.VIEW_SUPPLIER_BALANCES,
+  PERMISSIONS.CREATE_SUPPLIER_PAYMENTS,
+
+  PERMISSIONS.VIEW_SALES,
+  PERMISSIONS.CREATE_SALES,
+  PERMISSIONS.UPDATE_SALES,
+  PERMISSIONS.CANCEL_SALES,
+
+  PERMISSIONS.VIEW_CUSTOMERS,
+  PERMISSIONS.CREATE_CUSTOMERS,
+  PERMISSIONS.UPDATE_CUSTOMERS,
+  PERMISSIONS.MANAGE_CUSTOMERS,
+  // DELETE_CUSTOMERS stays with ADMIN — customers are deactivated, not removed.
+
+  PERMISSIONS.VIEW_CUSTOMER_BALANCES,
+  PERMISSIONS.CREATE_CUSTOMER_PAYMENTS,
+  PERMISSIONS.VIEW_PROFIT,
+
+  PERMISSIONS.VIEW_RETURNS,
+  PERMISSIONS.CREATE_RETURNS,
+  PERMISSIONS.CANCEL_RETURNS,
+  PERMISSIONS.CREATE_REFUNDS,
+  PERMISSIONS.VIEW_RETURN_VALUES,
+
+  PERMISSIONS.VIEW_EXCHANGES,
+  PERMISSIONS.CREATE_EXCHANGES,
+  PERMISSIONS.CANCEL_EXCHANGES,
+
+  PERMISSIONS.VIEW_INVENTORY_ADJUSTMENTS,
+  PERMISSIONS.CREATE_INVENTORY_ADJUSTMENTS,
+  PERMISSIONS.CANCEL_INVENTORY_ADJUSTMENTS,
+
+  PERMISSIONS.VIEW_NOTIFICATIONS,
+
+  PERMISSIONS.VIEW_REPORTS,
+  PERMISSIONS.VIEW_PROFIT_REPORTS,
+
+  // §81: a manager runs the shop, so every operational report is theirs, and
+  // the financial ones follow the finance permissions they already hold.
+  PERMISSIONS.VIEW_SALES_REPORT,
+  PERMISSIONS.VIEW_PURCHASE_REPORT,
+  PERMISSIONS.VIEW_INVENTORY_REPORT,
+  PERMISSIONS.VIEW_PROFIT_REPORT,
+  PERMISSIONS.VIEW_EXPENSE_REPORT,
+  PERMISSIONS.VIEW_CUSTOMER_REPORT,
+  PERMISSIONS.VIEW_SUPPLIER_REPORT,
+  PERMISSIONS.VIEW_CASH_FLOW,
+  PERMISSIONS.VIEW_DAILY_CLOSING,
+  PERMISSIONS.VIEW_FINANCIAL_ANALYTICS,
+  PERMISSIONS.EXPORT_REPORTS,
+
+  // §83: a manager runs the shop's money day to day — sees the position,
+  // records expenses, moves cash to the bank. What stays with the owner is
+  // anything that redefines the books themselves: opening or renaming an
+  // account, and correcting the ledger by hand.
+  PERMISSIONS.VIEW_FINANCE,
+  PERMISSIONS.VIEW_FINANCIAL_TRANSACTIONS,
+  PERMISSIONS.VIEW_ACCOUNTS,
+  PERMISSIONS.VIEW_EXPENSES,
+  PERMISSIONS.CREATE_EXPENSE,
+  PERMISSIONS.UPDATE_EXPENSE,
+  PERMISSIONS.CANCEL_EXPENSE,
+  PERMISSIONS.CREATE_TRANSFER,
+  PERMISSIONS.VIEW_RECEIVABLES,
+  PERMISSIONS.VIEW_PAYABLES,
+  // Deliberately absent for MANAGER: CREATE_ACCOUNT, UPDATE_ACCOUNT,
+  // CREATE_FINANCIAL_ADJUSTMENT, MANAGE_FINANCE.
+];
+
+/**
+ * STAFF: shop-floor employee.
+ * Sells, registers customers, looks things up. No finance, no reports,
+ * no user management.
+ */
+const STAFF_PERMISSIONS: Permission[] = [
+  PERMISSIONS.VIEW_DASHBOARD,
+
+  PERMISSIONS.VIEW_PRODUCTS,
+
+  PERMISSIONS.VIEW_INVENTORY,
+
+  PERMISSIONS.VIEW_SALES,
+  PERMISSIONS.CREATE_SALES,
+
+  PERMISSIONS.VIEW_CUSTOMERS,
+  PERMISSIONS.CREATE_CUSTOMERS,
+
+  // Taking goods back over the counter is shop-floor work, so STAFF can record
+  // a return and see what it is worth. Paying the money back out is not:
+  // CREATE_REFUNDS stays with a manager, and a STAFF return simply lands with
+  // refund_status = NO_REFUND for a manager to settle.
+  PERMISSIONS.VIEW_RETURNS,
+  PERMISSIONS.CREATE_RETURNS,
+  PERMISSIONS.VIEW_RETURN_VALUES,
+
+  // An exchange is a single counter transaction, so STAFF may complete one
+  // including its difference (§52).
+  PERMISSIONS.VIEW_EXCHANGES,
+  PERMISSIONS.CREATE_EXCHANGES,
+
+  PERMISSIONS.VIEW_INVENTORY_ADJUSTMENTS,
+  // Deliberately absent for STAFF: CANCEL_SALES, UPDATE_SALES,
+  // CREATE_CUSTOMER_PAYMENTS, VIEW_CUSTOMER_BALANCES, VIEW_PROFIT,
+  // CANCEL_RETURNS, CREATE_REFUNDS, CANCEL_EXCHANGES,
+  // CREATE_INVENTORY_ADJUSTMENTS, CANCEL_INVENTORY_ADJUSTMENTS.
+];
+
+/** Role -> permission matrix. ADMIN always receives everything. */
+export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
+  ADMIN: ALL_PERMISSIONS,
+  MANAGER: MANAGER_PERMISSIONS,
+  STAFF: STAFF_PERMISSIONS,
+};
+
+/** Arabic labels — handy for a future permission matrix screen. */
+export const PERMISSION_LABELS: Record<Permission, string> = {
+  VIEW_DASHBOARD: "عرض الرئيسية",
+
+  VIEW_PRODUCTS: "عرض المنتجات",
+  CREATE_PRODUCTS: "إضافة منتجات",
+  UPDATE_PRODUCTS: "تعديل المنتجات",
+  DELETE_PRODUCTS: "حذف المنتجات",
+
+  VIEW_INVENTORY: "عرض المخزون",
+  MANAGE_INVENTORY: "إدارة المخزون",
+
+  VIEW_SUPPLIERS: "عرض الموردين",
+  CREATE_SUPPLIERS: "إضافة موردين",
+  UPDATE_SUPPLIERS: "تعديل الموردين",
+  DELETE_SUPPLIERS: "حذف الموردين",
+  MANAGE_SUPPLIERS: "إدارة الموردين",
+
+  VIEW_PURCHASES: "عرض المشتريات",
+  CREATE_PURCHASES: "تسجيل المشتريات",
+  UPDATE_PURCHASES: "تعديل المشتريات",
+  CANCEL_PURCHASES: "إلغاء المشتريات",
+
+  VIEW_SUPPLIER_BALANCES: "عرض أرصدة الموردين",
+  CREATE_SUPPLIER_PAYMENTS: "تسجيل دفعات الموردين",
+
+  VIEW_SALES: "عرض المبيعات",
+  CREATE_SALES: "تسجيل المبيعات",
+  UPDATE_SALES: "تعديل المبيعات",
+  CANCEL_SALES: "إلغاء المبيعات",
+
+  VIEW_CUSTOMERS: "عرض العملاء",
+  CREATE_CUSTOMERS: "إضافة عملاء",
+  UPDATE_CUSTOMERS: "تعديل العملاء",
+  DELETE_CUSTOMERS: "حذف العملاء",
+  MANAGE_CUSTOMERS: "إدارة العملاء",
+
+  VIEW_CUSTOMER_BALANCES: "عرض أرصدة العملاء",
+  CREATE_CUSTOMER_PAYMENTS: "تسجيل دفعات العملاء",
+
+  VIEW_PROFIT: "عرض الأرباح",
+
+  VIEW_RETURNS: "عرض المرتجعات",
+  CREATE_RETURNS: "تسجيل المرتجعات",
+  CANCEL_RETURNS: "إلغاء المرتجعات",
+  CREATE_REFUNDS: "تسجيل عمليات الاسترداد",
+  VIEW_RETURN_VALUES: "عرض قيم المرتجعات",
+
+  VIEW_EXCHANGES: "عرض الاستبدالات",
+  CREATE_EXCHANGES: "تسجيل الاستبدالات",
+  CANCEL_EXCHANGES: "إلغاء الاستبدالات",
+
+  VIEW_INVENTORY_ADJUSTMENTS: "عرض تعديلات المخزون",
+  CREATE_INVENTORY_ADJUSTMENTS: "تعديل المخزون",
+  CANCEL_INVENTORY_ADJUSTMENTS: "إلغاء تعديلات المخزون",
+
+  VIEW_FINANCE: "عرض المالية",
+  MANAGE_FINANCE: "إدارة المالية",
+
+  VIEW_FINANCIAL_TRANSACTIONS: "عرض الحركات المالية",
+  VIEW_ACCOUNTS: "عرض الحسابات المالية",
+  CREATE_ACCOUNT: "إضافة حساب مالي",
+  UPDATE_ACCOUNT: "تعديل حساب مالي",
+
+  VIEW_EXPENSES: "عرض المصاريف",
+  CREATE_EXPENSE: "تسجيل مصروف",
+  UPDATE_EXPENSE: "تعديل مصروف",
+  CANCEL_EXPENSE: "إلغاء مصروف",
+
+  CREATE_TRANSFER: "تحويل بين الحسابات",
+  VIEW_RECEIVABLES: "عرض ذمم العملاء",
+  VIEW_PAYABLES: "عرض ذمم الموردين",
+  CREATE_FINANCIAL_ADJUSTMENT: "تعديل الرصيد المالي",
+
+  VIEW_REPORTS: "عرض التقارير",
+  VIEW_PROFIT_REPORTS: "عرض تقارير الأرباح",
+
+  VIEW_SALES_REPORT: "تقرير المبيعات",
+  VIEW_PURCHASE_REPORT: "تقرير المشتريات",
+  VIEW_INVENTORY_REPORT: "تقارير المخزون",
+  VIEW_PROFIT_REPORT: "تقرير الأرباح",
+  VIEW_EXPENSE_REPORT: "تقرير المصاريف",
+  VIEW_CUSTOMER_REPORT: "تقارير العملاء",
+  VIEW_SUPPLIER_REPORT: "تقارير الموردين",
+  VIEW_CASH_FLOW: "تقرير التدفق النقدي",
+  VIEW_DAILY_CLOSING: "الإغلاق اليومي",
+  VIEW_FINANCIAL_ANALYTICS: "التحليلات المالية",
+  EXPORT_REPORTS: "تصدير التقارير",
+
+  MANAGE_USERS: "إدارة المستخدمين",
+
+  MANAGE_SETTINGS: "إدارة إعدادات النظام",
+  VIEW_AUDIT_LOG: "عرض سجل النشاط",
+  VIEW_NOTIFICATIONS: "عرض التنبيهات",
+};
