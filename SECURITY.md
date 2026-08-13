@@ -125,6 +125,19 @@ application generates — no attacker-controlled input reaches it. The only fix
 npm offers is `exceljs@3.4.0`, a major downgrade. **Assessed as not exploitable
 here and accepted.** Re-evaluate when exceljs updates its dependency.
 
+**The only thing the browser stores is an email address.** The login screen's
+«تذكّر بريدي على هذا الجهاز» writes the address to `localStorage` under
+`bayt-al-qaftan:remembered-email`, and nothing else — no password, no token, no
+session material. It is written only after the credentials are known good, and
+unticking the box erases it at that moment rather than at the next sign-in.
+Saving the password is left to the browser's own manager, which the fields
+invite with `autocomplete="username"` and `"current-password"`.
+
+Sessions remain HTTP-only cookies written by `@supabase/ssr`; none of that is
+readable from script, and the remember-me feature does not change it. Verified
+by a check that signs in, returns, and asserts the password appears in neither
+`localStorage` nor `sessionStorage`.
+
 **CSP keeps `'unsafe-inline'` for scripts.** Next.js inlines its bootstrap and
 hydration payload. Removing it needs per-request nonces threaded through the
 framework. Writing a policy the application then violates would be worse.
