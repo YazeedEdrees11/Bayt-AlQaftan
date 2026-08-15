@@ -449,5 +449,5 @@ export async function getReportSettings(): Promise<ReportSettings | null> {
     console.error("[reports] getReportSettings:", error.message);
     return null;
   }
-  return (data as ReportSettings | null) ?? undefined;
+  return (data as ReportSettings | null) ?? null;
 }
