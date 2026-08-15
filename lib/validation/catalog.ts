@@ -21,7 +21,7 @@ const optionalText = (max: number, label: string) =>
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional()
-    .transform((value) => value ?? null);
+    .transform((value) => value ?? undefined);
 
 /** Accepts "12", "12.5", "" — money always lands as a 2-decimal number. */
 const money = (label: string) =>
@@ -110,7 +110,7 @@ const phone = (label: string) =>
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional()
-    .transform((value) => value ?? null);
+    .transform((value) => value ?? undefined);
 
 export const supplierSchema = z.object({
   name: z
@@ -133,7 +133,7 @@ export const supplierSchema = z.object({
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional()
-    .transform((value) => value ?? null),
+    .transform((value) => value ?? undefined),
   address: optionalText(400, "العنوان"),
   notes: optionalText(1000, "الملاحظات"),
   is_active: z.boolean().default(true),
@@ -171,10 +171,10 @@ export const variantSchema = z.object({
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional()
-    .transform((value) => value ?? null),
+    .transform((value) => value ?? undefined),
   color: optionalText(60, "اللون"),
   size: optionalText(30, "المقاس"),
-  supplier_id: uuid.nullable().optional().transform((value) => value ?? null),
+  supplier_id: uuid.nullable().optional().transform((value) => value ?? undefined),
   purchase_price: money("سعر الشراء"),
   selling_price: money("سعر البيع"),
   /** Only applied when the variant is first created. */
@@ -277,7 +277,7 @@ export type StockAdjustmentInput = z.infer<typeof stockAdjustmentSchema>;
 
 export const imageMetaSchema = z.object({
   product_id: uuid,
-  variant_id: uuid.nullable().optional().transform((value) => value ?? null),
+  variant_id: uuid.nullable().optional().transform((value) => value ?? undefined),
   alt_text: optionalText(200, "النص البديل"),
 });
 export type ImageMetaInput = z.infer<typeof imageMetaSchema>;

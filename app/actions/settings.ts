@@ -261,3 +261,15 @@ export async function markAllNotificationsReadAction(): Promise<ActionResult<{ c
   revalidatePath("/", "layout");
   return { ok: true, data: { count: Number(data ?? 0) } };
 }
+
+export async function getUnreadNotificationCountAction(): Promise<number> {
+  await requirePermission("VIEW_NOTIFICATIONS");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("unread_notification_count");
+  if (error) {
+    console.error("[settings] getUnreadNotificationCountAction:", error.message);
+    return 0;
+  }
+  return Number(data ?? 0);
+}
+

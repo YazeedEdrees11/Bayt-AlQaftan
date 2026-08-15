@@ -156,13 +156,13 @@ export async function listReturns({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("search_returns", {
-    p_search: search?.trim() || null,
-    p_customer_id: customerId ?? null,
+    p_search: search?.trim() || undefined,
+    p_customer_id: customerId ?? undefined,
     p_status: status,
     p_refund_status: refundStatus,
     p_reason: reason,
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
   });
@@ -182,8 +182,8 @@ export async function getReturnsSummary(
 ): Promise<ReturnsSummary> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("returns_summary", {
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
   });
 
   if (error) {
@@ -330,11 +330,11 @@ export async function listExchanges({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("search_exchanges", {
-    p_search: search?.trim() || null,
-    p_customer_id: customerId ?? null,
+    p_search: search?.trim() || undefined,
+    p_customer_id: customerId ?? undefined,
     p_status: status,
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
   });
@@ -440,11 +440,11 @@ export async function listAdjustments({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("search_adjustments", {
-    p_search: search?.trim() || null,
+    p_search: search?.trim() || undefined,
     p_reason: reason,
     p_status: status,
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
   });
@@ -680,11 +680,11 @@ export async function searchCountableVariants(
 > {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_inventory", {
-    p_search: search?.trim() || null,
-    p_category_id: null,
-    p_supplier_id: null,
-    p_color: null,
-    p_size: null,
+    p_search: search?.trim() || undefined,
+    p_category_id: undefined,
+    p_supplier_id: undefined,
+    p_color: undefined,
+    p_size: undefined,
     p_stock_status: "ALL",
     p_low_stock_threshold: 5,
     p_limit: limit,

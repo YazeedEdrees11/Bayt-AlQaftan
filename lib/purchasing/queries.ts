@@ -117,14 +117,14 @@ export async function listPurchases(
   const perPage = normalizePageSize(params.perPage ?? DEFAULT_PAGE_SIZE);
 
   const { data, error } = await supabase.rpc("search_purchases", {
-    p_search: params.search?.trim() || null,
-    p_supplier_id: params.supplierId || null,
+    p_search: params.search?.trim() || undefined,
+    p_supplier_id: params.supplierId || undefined,
     p_payment_status: params.paymentStatus ?? "ALL",
     p_status: params.status ?? "ALL",
-    p_date_from: params.dateFrom || null,
-    p_date_to: params.dateTo || null,
-    p_min_amount: params.minAmount ?? null,
-    p_max_amount: params.maxAmount ?? null,
+    p_date_from: params.dateFrom || undefined,
+    p_date_to: params.dateTo || undefined,
+    p_min_amount: params.minAmount ?? undefined,
+    p_max_amount: params.maxAmount ?? undefined,
     p_payment_method: params.paymentMethod ?? "ALL",
     p_limit: perPage,
     p_offset: (page - 1) * perPage,
@@ -316,11 +316,11 @@ export async function searchPurchasableVariants(
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("search_inventory", {
-    p_search: search?.trim() || null,
-    p_category_id: null,
-    p_supplier_id: null,
-    p_color: null,
-    p_size: null,
+    p_search: search?.trim() || undefined,
+    p_category_id: undefined,
+    p_supplier_id: undefined,
+    p_color: undefined,
+    p_size: undefined,
     p_stock_status: "ALL",
     p_low_stock_threshold: 5,
     p_limit: limit,

@@ -69,7 +69,7 @@ const optionalText = (max: number, label: string) =>
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional()
-    .transform((value) => value ?? null);
+    .transform((value) => value ?? undefined);
 
 const paymentMethod = z.enum(
   PURCHASE_PAYMENT_METHODS as unknown as [
@@ -104,8 +104,8 @@ export type PurchaseItemInput = z.infer<typeof purchaseItemSchema>;
 function checkBankFields(
   value: {
     payment_method: PurchasePaymentMethod;
-    bank_name: string | null;
-    transfer_reference: string | null;
+    bank_name?: string | undefined;
+    transfer_reference?: string | undefined;
   },
   ctx: z.RefinementCtx,
 ) {

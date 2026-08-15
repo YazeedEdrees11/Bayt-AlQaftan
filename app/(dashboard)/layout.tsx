@@ -2,7 +2,6 @@ import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { requireAuth } from "@/lib/auth/require-auth";
 import { enforceMaintenanceMode } from "@/lib/settings/maintenance";
-import { getUnreadNotificationCount } from "@/lib/settings/queries";
 import { hasPermission } from "@/lib/permissions/check-permission";
 
 /**
@@ -36,7 +35,6 @@ export default async function DashboardLayout({
   const { profile } = authUser;
 
   const showNotifications = hasPermission(profile, "VIEW_NOTIFICATIONS");
-  const unreadNotifications = showNotifications ? await getUnreadNotificationCount() : 0;
 
   /*
    * A fixed shell: the viewport is the frame, and only `main` scrolls inside
@@ -66,7 +64,6 @@ export default async function DashboardLayout({
             <Header
               profile={profile}
               showNotifications={showNotifications}
-              unreadNotifications={unreadNotifications}
             />
           </div>
 
@@ -78,3 +75,4 @@ export default async function DashboardLayout({
     </div>
   );
 }
+

@@ -34,7 +34,7 @@ export const getStoreSettings = cache(async (): Promise<StoreSettings | null> =>
     console.error("[settings] getStoreSettings:", error.message);
     return null;
   }
-  return (data as StoreSettings) ?? null;
+  return (data as StoreSettings) ?? undefined;
 });
 
 /** Every setting in a category, with the metadata its control is built from. */
@@ -152,12 +152,12 @@ export async function searchAuditLogs({
 }: AuditQuery = {}): Promise<{ rows: AuditLogRow[]; total: number; totalPages: number; page: number }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_audit_logs", {
-    p_search: search ?? null,
-    p_action: action ?? null,
-    p_entity: entity ?? null,
-    p_user: user ?? null,
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_search: search ?? undefined,
+    p_action: action ?? undefined,
+    p_entity: entity ?? undefined,
+    p_user: user ?? undefined,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
     p_limit: perPage,
     p_offset: (Math.max(page, 1) - 1) * perPage,
   });
@@ -227,7 +227,7 @@ export const getAppConfig = cache(async (): Promise<AppConfig | null> => {
     console.error("[settings] getAppConfig:", error.message);
     return null;
   }
-  return (data as AppConfig) ?? null;
+  return (data as AppConfig) ?? undefined;
 });
 
 /** Recent operational events, grouped, for the system screen (§97). */
@@ -252,5 +252,5 @@ export async function getDataStatistics(): Promise<DataStatistics | null> {
     console.error("[settings] getDataStatistics:", error.message);
     return null;
   }
-  return ((data ?? [])[0] as DataStatistics) ?? null;
+  return ((data ?? [])[0] as DataStatistics) ?? undefined;
 }
