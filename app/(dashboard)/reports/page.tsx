@@ -242,8 +242,29 @@ const REPORT_ICONS: Record<string, typeof ShoppingBag> = {
   "/reports/daily-closing": CalendarCheck,
 };
 
+import { RevenueChart } from "@/components/reports/revenue-chart";
+import { CategoryPieChart } from "@/components/reports/category-pie-chart";
+import { getMonthlyPerformance, getProfitByDimension } from "@/lib/reports/queries";
+
 export default async function ReportsPage() {
   const { profile } = await requirePermission("VIEW_REPORTS");
+
+  // Fetch real data for the charts
+  const [monthlyPerf, categoryProfit] = await Promise.all([
+    getMonthlyPerformance(new Date().getFullYear()),
+    getProfitByDimension({}, "category", 5),
+  ]);
+
+  const revenueData = monthlyPerf.map((m) => ({
+    month: m.label,
+    revenue: m.net_sales,
+  }));
+
+  const categoryData = categoryProfit.map((c, index) => ({
+    name: c.dimension_name || "أخرى",
+    value: c.net_sales,
+    color: `var(--chart-${(index % 5) + 1})`
+  }));
 
   const groups = GROUPS.map((group) => ({
     ...group,
@@ -266,7 +287,31 @@ export default async function ReportsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <>
+          {/* Main Charts Overview */}
+          <div className="grid gap-4 lg:grid-cols-2 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>الأرباح السنوية</CardTitle>
+                <CardDescription>نظرة عامة على الإيرادات والأرباح خلال الأشهر الماضية.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RevenueChart data={revenueData.length > 0 ? revenueData : undefined} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>المبيعات حسب التصنيف</CardTitle>
+                <CardDescription>توزيع المبيعات على الأقسام الرئيسية خلال الفترة الحالية.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CategoryPieChart data={categoryData.length > 0 ? categoryData : undefined} />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
           {groups.map((group) => {
             const Icon = GROUP_ICONS[group.title] ?? group.icon;
             return (
@@ -315,6 +360,7 @@ export default async function ReportsPage() {
             );
           })}
         </div>
+        </>
       )}
     </div>
   );

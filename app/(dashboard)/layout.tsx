@@ -29,8 +29,11 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { profile } = await requireAuth();
-  await enforceMaintenanceMode();
+  const [authUser, _] = await Promise.all([
+    requireAuth(),
+    enforceMaintenanceMode(),
+  ]);
+  const { profile } = authUser;
 
   const showNotifications = hasPermission(profile, "VIEW_NOTIFICATIONS");
   const unreadNotifications = showNotifications ? await getUnreadNotificationCount() : 0;
@@ -54,24 +57,20 @@ export default async function DashboardLayout({
    * a printed receipt stops at the fold.
    */
   return (
-    <div
-      data-app-shell
-      className="bg-background h-svh overflow-hidden p-0 lg:p-4"
-    >
-      <div
-        data-app-shell
-        className="mx-auto flex h-full w-full max-w-[1760px] gap-4"
-      >
+    <div className="bg-background min-h-svh p-0 lg:px-4 lg:pb-4">
+      <div className="mx-auto flex w-full max-w-[1760px] lg:gap-4">
         <Sidebar profile={profile} />
 
-        <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col gap-4 p-3 sm:p-4 lg:p-0">
-          <Header
-            profile={profile}
-            showNotifications={showNotifications}
-            unreadNotifications={unreadNotifications}
-          />
+        <div className="flex min-w-0 flex-1 flex-col relative">
+          <div className="sticky top-0 z-40 bg-background pb-3 sm:pb-4 pt-3 sm:pt-4 lg:pt-4">
+            <Header
+              profile={profile}
+              showNotifications={showNotifications}
+              unreadNotifications={unreadNotifications}
+            />
+          </div>
 
-          <main className="bg-card border-border/70 min-h-0 flex-1 overflow-y-auto rounded-2xl border p-5 shadow-[0_1px_2px_0_oklch(0_0_0/0.03)] sm:p-7">
+          <main className="bg-background lg:bg-card border-border/70 border-0 lg:border rounded-none lg:rounded-2xl p-5 shadow-none lg:shadow-[0_1px_2px_0_oklch(0_0_0/0.03)] sm:p-7">
             {children}
           </main>
         </div>

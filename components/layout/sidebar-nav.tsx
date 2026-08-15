@@ -85,7 +85,7 @@ export function SidebarNav({
         </Link>
       </div>
 
-      <nav className=" flex-1 space-y-6 overflow-y-auto px-3">
+      <nav className="no-scrollbar flex-1 space-y-6 overflow-y-auto px-3">
         {sections.map((section) => (
           <div key={section.title ?? "main"} className="space-y-1">
             {section.title ? (

@@ -13,7 +13,15 @@ import { LOGIN_ROUTE, PUBLIC_ROUTES, DEFAULT_ROUTE } from "@/lib/routes";
  * middleware deliberately avoids extra database round-trips.
  */
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete("x-user-id");
+  requestHeaders.delete("x-user-email");
+
+  let supabaseResponse = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -31,7 +39,11 @@ export async function updateSession(request: NextRequest) {
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value);
         }
-        supabaseResponse = NextResponse.next({ request });
+        supabaseResponse = NextResponse.next({
+          request: {
+            headers: requestHeaders,
+          },
+        });
         for (const { name, value, options } of cookiesToSet) {
           supabaseResponse.cookies.set(name, value, options);
         }
@@ -45,6 +57,22 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (user) {
+    requestHeaders.set("x-user-id", user.id);
+    requestHeaders.set("x-user-email", user.email || "");
+    
+    // Propagate mutated requestHeaders to the response so Server Components see them
+    const cookiesToPreserve = supabaseResponse.cookies.getAll();
+    supabaseResponse = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+    for (const cookie of cookiesToPreserve) {
+      supabaseResponse.cookies.set(cookie.name, cookie.value, cookie);
+    }
+  }
 
   const pathname = request.nextUrl.pathname;
   const isPublicRoute = PUBLIC_ROUTES.some(

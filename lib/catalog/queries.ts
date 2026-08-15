@@ -244,43 +244,30 @@ export async function getProductById(
 ): Promise<ProductWithDetails | null> {
   const supabase = await createClient();
 
-  const { data: product, error } = await supabase
-    .from("products")
-    .select("*, category:categories(id, name)")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (error) {
-    console.error("[catalog] getProductById:", error.message);
-    throw new Error("تعذر تحميل المنتج.");
-  }
-  if (!product) return null;
-
-  const [variantsResult, imagesResult, stockResult] = await Promise.all([
+  const [productResult, stockResult] = await Promise.all([
     supabase
-      .from("product_variants")
-      .select("*, supplier:suppliers(id, name)")
-      .eq("product_id", id)
-      .order("created_at"),
-    supabase
-      .from("product_images")
-      .select("*")
-      .eq("product_id", id)
-      .order("is_primary", { ascending: false })
-      .order("sort_order")
-      .order("created_at"),
+      .from("products")
+      .select(`
+        *,
+        category:categories(id, name),
+        variants:product_variants(*, supplier:suppliers(id, name)),
+        images:product_images(*)
+      `)
+      .eq("id", id)
+      .maybeSingle(),
     supabase.from("variant_stock").select("*").eq("product_id", id),
   ]);
 
-  if (variantsResult.error || imagesResult.error || stockResult.error) {
+  if (productResult.error || stockResult.error) {
     console.error(
       "[catalog] getProductById details:",
-      variantsResult.error?.message ??
-        imagesResult.error?.message ??
-        stockResult.error?.message,
+      productResult.error?.message ?? stockResult.error?.message,
     );
     throw new Error("تعذر تحميل المنتج.");
   }
+
+  const product = productResult.data;
+  if (!product) return null;
 
   const stockByVariant = new Map<string, number>();
   const damagedByVariant = new Map<string, number>();
@@ -293,16 +280,26 @@ export async function getProductById(
     damagedByVariant.set(row.variant_id, row.damaged_quantity);
   }
 
-  const images = (imagesResult.data ?? []) as ProductImage[];
+  const images = (product.images ?? []) as ProductImage[];
+  images.sort((a, b) => {
+    if (a.is_primary && !b.is_primary) return -1;
+    if (!a.is_primary && b.is_primary) return 1;
+    if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  });
+
   const urls = await getSignedImageUrls(images.map((i) => i.storage_path));
 
   type VariantJoin = ProductVariant & {
     supplier: { id: string; name: string } | null;
   };
 
-  const variants: VariantWithStock[] = (
-    (variantsResult.data ?? []) as VariantJoin[]
-  ).map((variant) => {
+  const variantsData = (product.variants ?? []) as VariantJoin[];
+  variantsData.sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+  );
+
+  const variants: VariantWithStock[] = variantsData.map((variant) => {
     const variantImage = images.find((i) => i.variant_id === variant.id);
     const fallback = images.find((i) => i.is_primary) ?? images[0];
     const path = (variantImage ?? fallback)?.storage_path;
@@ -322,12 +319,20 @@ export async function getProductById(
     0,
   );
 
-  const { category, ...rest } = product as ProductWithDetails & {
+  // Destructure nested relations out; spread only the base product columns.
+  const {
+    category,
+    variants: _rawVariants,
+    images: _rawImages,
+    ...baseProduct
+  } = product as typeof product & {
     category: { id: string; name: string } | null;
+    variants: unknown[];
+    images: unknown[];
   };
 
   return {
-    ...rest,
+    ...baseProduct,
     category: category ?? null,
     variants,
     images: images.map((image) => ({
