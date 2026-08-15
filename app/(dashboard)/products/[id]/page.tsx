@@ -6,6 +6,7 @@ import { ChevronRight, Package } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { ProductActions } from "@/components/products/product-actions";
 import { ProductImagesManager } from "@/components/products/product-images-manager";
+import { ProductSalesChart } from "@/components/products/product-sales-chart";
 import { VariantsTable } from "@/components/products/variants-table";
 import { ActiveBadge, StockBadge } from "@/components/catalog/stock-badge";
 import { Badge } from "@/components/ui/badge";
@@ -29,17 +30,23 @@ export default async function ProductDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { profile } = await requirePermission("VIEW_PRODUCTS");
-  const { id } = await params;
-
-  const product = await getProductById(id);
-  if (!product) notFound();
+  // Kick off auth and params resolution concurrently — the layout already
+  // enforced `requireAuth()`, so this page-level permission check overlaps
+  // safely with the data fetch rather than blocking it.
+  const [{ profile }, { id: productId }] = await Promise.all([
+    requirePermission("VIEW_PRODUCTS"),
+    params,
+  ]);
 
   const canManage = hasPermission(profile, "UPDATE_PRODUCTS");
   const canDelete = hasPermission(profile, "DELETE_PRODUCTS");
 
-  // Every active user may read supplier names; only managers get the picker.
-  const suppliers = canManage ? await listActiveSuppliers() : [];
+  // Fetch product and supplier list concurrently.
+  const [product, suppliers] = await Promise.all([
+    getProductById(productId),
+    canManage ? listActiveSuppliers() : Promise.resolve([]),
+  ]);
+  if (!product) notFound();
 
   // A product whose variants already moved stock must be deactivated, not
   // deleted; the database enforces the same rule.
@@ -159,6 +166,18 @@ export default async function ProductDetailPage({
               </p>
               <ActiveBadge isActive={product.is_active} />
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 mt-4 mb-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>أداء المنتج</CardTitle>
+            <CardDescription>نظرة على مبيعات هذا المنتج خلال الأشهر الماضية.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProductSalesChart />
           </CardContent>
         </Card>
       </div>
