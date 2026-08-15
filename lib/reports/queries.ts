@@ -249,7 +249,7 @@ const EMPTY_INVENTORY: InventoryValueReport = {
 
 export async function getInventoryValueReport(): Promise<InventoryValueReport> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_inventory_value_report", {});
+  const { data, error } = await supabase.rpc("get_inventory_value_report");
   if (error) {
     console.error("[reports] getInventoryValueReport:", error.message);
     throw new Error(FAILED);
@@ -375,7 +375,7 @@ export async function getPeriodComparison(range: ReportRange = {}): Promise<Comp
 
 export async function getManagementAlerts(): Promise<ManagementAlert[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_management_alerts", {});
+  const { data, error } = await supabase.rpc("get_management_alerts");
   if (error) {
     console.error("[reports] getManagementAlerts:", error.message);
     return [];

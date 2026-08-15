@@ -214,7 +214,7 @@ export async function listProducts(
   const items: ProductListItem[] = rows.map((row) => ({
     ...row,
     image_url: row.primary_image_path
-      ? (urls.get(row.primary_image_path) ?? undefined)
+      ? (urls.get(row.primary_image_path) ?? null)
       : null,
   }));
 
@@ -303,8 +303,8 @@ export async function getProductById(
       ...variant,
       current_stock: stockByVariant.get(variant.id) ?? 0,
       damaged_quantity: damagedByVariant.get(variant.id) ?? 0,
-      supplier_name: variant.supplier?.name ?? undefined,
-      image_url: path ? (urls.get(path) ?? undefined) : null,
+      supplier_name: variant.supplier?.name ?? null,
+      image_url: path ? (urls.get(path) ?? null) : null,
     };
   });
 
@@ -332,7 +332,7 @@ export async function getProductById(
     variants,
     images: images.map((image) => ({
       ...image,
-      url: urls.get(image.storage_path) ?? undefined,
+      url: urls.get(image.storage_path) ?? null,
     })),
     total_stock: totalStock,
     stock_value: stockValue,
@@ -403,14 +403,14 @@ export async function getVariantById(
     ...variant,
     current_stock: stock?.current_stock ?? 0,
     damaged_quantity: stock?.damaged_quantity ?? 0,
-    supplier_name: supplier?.name ?? undefined,
+    supplier_name: supplier?.name ?? null,
     image_url: image?.storage_path
-      ? (urls.get(image.storage_path) ?? undefined)
+      ? (urls.get(image.storage_path) ?? null)
       : null,
     product: {
       id: product?.id ?? row.product_id,
       name: product?.name ?? "",
-      category_name: product?.category?.name ?? undefined,
+      category_name: product?.category?.name ?? null,
     },
   };
 }
@@ -466,7 +466,7 @@ export async function getVariantTransactions(
 
   return rows.map((row) => ({
     ...row,
-    actor_name: row.created_by ? (names.get(row.created_by) ?? undefined) : null,
+    actor_name: row.created_by ? (names.get(row.created_by) ?? null) : null,
   }));
 }
 
@@ -521,7 +521,7 @@ export async function listInventory(
   const items: InventoryListItem[] = rows.map((row) => ({
     ...row,
     image_url: row.primary_image_path
-      ? (urls.get(row.primary_image_path) ?? undefined)
+      ? (urls.get(row.primary_image_path) ?? null)
       : null,
   }));
 

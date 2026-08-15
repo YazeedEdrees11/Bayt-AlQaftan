@@ -56,7 +56,7 @@ export async function getSignedImageUrl(
 ): Promise<string | null> {
   if (!path) return null;
   const map = await getSignedImageUrls([path]);
-  return map.get(path) ?? undefined;
+  return map.get(path) ?? null;
 }
 
 /**

@@ -272,8 +272,8 @@ export async function getPurchaseById(
     const path = productId ? imagePathByProduct.get(productId) : undefined;
     return {
       ...item,
-      image_url: path ? (signedImages.get(path) ?? undefined) : null,
-      current_stock: stockByVariant.get(item.variant_id) ?? undefined,
+      image_url: path ? (signedImages.get(path) ?? null) : null,
+      current_stock: stockByVariant.get(item.variant_id) ?? null,
     };
   });
 
@@ -281,21 +281,21 @@ export async function getPurchaseById(
     (payment) => ({
       ...payment,
       receipt_url: payment.receipt_image_path
-        ? (receiptUrls.get(payment.receipt_image_path) ?? undefined)
+        ? (receiptUrls.get(payment.receipt_image_path) ?? null)
         : null,
       actor_name: payment.created_by
-        ? (actorNames.get(payment.created_by) ?? undefined)
+        ? (actorNames.get(payment.created_by) ?? null)
         : null,
     }),
   );
 
   return {
     ...rest,
-    supplier: supplier ?? undefined,
+    supplier: supplier ?? null,
     items: itemsWithMedia,
     payments: paymentsWithMedia,
     created_by_name: rest.created_by
-      ? (actorNames.get(rest.created_by) ?? undefined)
+      ? (actorNames.get(rest.created_by) ?? null)
       : null,
   };
 }
@@ -317,10 +317,10 @@ export async function searchPurchasableVariants(
 
   const { data, error } = await supabase.rpc("search_inventory", {
     p_search: search?.trim() || undefined,
-    p_category_id: null,
-    p_supplier_id: null,
-    p_color: null,
-    p_size: null,
+    p_category_id: undefined,
+    p_supplier_id: undefined,
+    p_color: undefined,
+    p_size: undefined,
     p_stock_status: "ALL",
     p_low_stock_threshold: 5,
     p_limit: limit,
@@ -351,7 +351,7 @@ export async function searchPurchasableVariants(
     selling_price: Number(row.selling_price),
     current_stock: row.current_stock,
     image_url: row.primary_image_path
-      ? (urls.get(row.primary_image_path) ?? undefined)
+      ? (urls.get(row.primary_image_path) ?? null)
       : null,
   }));
 }
@@ -470,9 +470,9 @@ export async function getSupplierPayments(
   return rows.map((row) => ({
     ...row,
     receipt_url: row.receipt_image_path
-      ? (receipts.get(row.receipt_image_path) ?? undefined)
+      ? (receipts.get(row.receipt_image_path) ?? null)
       : null,
-    actor_name: row.created_by ? (actors.get(row.created_by) ?? undefined) : null,
+    actor_name: row.created_by ? (actors.get(row.created_by) ?? null) : null,
   }));
 }
 

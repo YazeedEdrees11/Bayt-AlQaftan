@@ -221,8 +221,8 @@ export async function getCustomerPayments(
 
   return rows.map((row) => ({
     ...row,
-    receipt_url: row.receipt_image_path ? (receipts.get(row.receipt_image_path) ?? undefined) : null,
-    actor_name: row.created_by ? (actors.get(row.created_by) ?? undefined) : null,
+    receipt_url: row.receipt_image_path ? (receipts.get(row.receipt_image_path) ?? null) : null,
+    actor_name: row.created_by ? (actors.get(row.created_by) ?? null) : null,
   }));
 }
 
@@ -389,15 +389,15 @@ export async function getSaleById(id: string): Promise<SaleWithDetails | null> {
   const itemsWithMedia: SaleItemWithMedia[] = allocated.map((item) => {
     const productId = productIdByVariant.get(item.variant_id);
     const path = productId ? imagePathByProduct.get(productId) : undefined;
-    return { ...item, image_url: path ? (signedImages.get(path) ?? undefined) : null };
+    return { ...item, image_url: path ? (signedImages.get(path) ?? null) : null };
   });
 
   const paymentsWithMedia: SalePaymentWithMedia[] = payments.map((payment) => ({
     ...payment,
     receipt_url: payment.receipt_image_path
-      ? (receiptUrls.get(payment.receipt_image_path) ?? undefined)
+      ? (receiptUrls.get(payment.receipt_image_path) ?? null)
       : null,
-    actor_name: payment.created_by ? (actorNames.get(payment.created_by) ?? undefined) : null,
+    actor_name: payment.created_by ? (actorNames.get(payment.created_by) ?? null) : null,
   }));
 
   const grossProfit = Math.round((Number(row.total_amount) - Number(row.total_cost)) * 100) / 100;
@@ -410,10 +410,10 @@ export async function getSaleById(id: string): Promise<SaleWithDetails | null> {
 
   return {
     ...rest,
-    customer: customer ?? undefined,
+    customer: customer ?? null,
     items: itemsWithMedia,
     payments: paymentsWithMedia,
-    created_by_name: rest.created_by ? (actorNames.get(rest.created_by) ?? undefined) : null,
+    created_by_name: rest.created_by ? (actorNames.get(rest.created_by) ?? null) : null,
     gross_profit: grossProfit,
     gross_margin: grossMargin,
   };
@@ -463,7 +463,7 @@ export async function searchSellableVariants(
     selling_price: Number(row.selling_price),
     purchase_price: Number(row.purchase_price),
     current_stock: row.current_stock,
-    image_url: row.primary_image_path ? (urls.get(row.primary_image_path) ?? undefined) : null,
+    image_url: row.primary_image_path ? (urls.get(row.primary_image_path) ?? null) : null,
   }));
 }
 

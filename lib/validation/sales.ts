@@ -120,8 +120,8 @@ export type CustomerUpdateInput = z.infer<typeof customerUpdateSchema>;
 function checkBankFields(
   value: {
     payment_method: SalePaymentMethod;
-    bank_name: string | null;
-    transfer_reference: string | null;
+    bank_name?: string | undefined;
+    transfer_reference?: string | undefined;
   },
   ctx: z.RefinementCtx,
 ) {

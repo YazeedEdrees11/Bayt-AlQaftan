@@ -104,8 +104,8 @@ export type PurchaseItemInput = z.infer<typeof purchaseItemSchema>;
 function checkBankFields(
   value: {
     payment_method: PurchasePaymentMethod;
-    bank_name: string | null;
-    transfer_reference: string | null;
+    bank_name?: string | undefined;
+    transfer_reference?: string | undefined;
   },
   ctx: z.RefinementCtx,
 ) {

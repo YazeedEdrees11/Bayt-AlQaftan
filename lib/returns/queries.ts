@@ -226,7 +226,7 @@ export async function getReturnableItems(
   );
   return rows.map((row) => ({
     ...row,
-    image_url: row.image_path ? (signed.get(row.image_path) ?? undefined) : null,
+    image_url: row.image_path ? (signed.get(row.image_path) ?? null) : null,
   }));
 }
 
@@ -282,10 +282,10 @@ export async function getReturnById(
     ...row,
     sale_number: row.sale?.sale_number ?? "",
     customer: row.customer,
-    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? undefined) : null,
+    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? null) : null,
     items: items.map((item) => ({
       ...item,
-      image_url: images.get(item.variant_id) ?? undefined,
+      image_url: images.get(item.variant_id) ?? null,
       // Reversing a sale reverses its cost with it.
       gross_profit:
         Math.round((Number(item.total_amount) - Number(item.total_cost)) * 100) / 100,
@@ -293,9 +293,9 @@ export async function getReturnById(
     refunds: refunds.map((refund) => ({
       ...refund,
       receipt_url: refund.receipt_image_path
-        ? (receiptUrls.get(refund.receipt_image_path) ?? undefined)
+        ? (receiptUrls.get(refund.receipt_image_path) ?? null)
         : null,
-      actor_name: refund.created_by ? (actorNames.get(refund.created_by) ?? undefined) : null,
+      actor_name: refund.created_by ? (actorNames.get(refund.created_by) ?? null) : null,
     })),
     profit_reversal:
       Math.round((Number(row.refund_amount) - Number(row.total_cost)) * 100) / 100,
@@ -391,18 +391,18 @@ export async function getExchangeById(
 
   const withImage = (item: ExchangeItem) => ({
     ...item,
-    image_url: images.get(item.variant_id) ?? undefined,
+    image_url: images.get(item.variant_id) ?? null,
   });
 
   return {
     ...row,
     sale_number: row.sale?.sale_number ?? "",
     customer: row.customer,
-    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? undefined) : null,
+    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? null) : null,
     returned_items: items.filter((i) => i.item_type === "RETURNED").map(withImage),
     new_items: items.filter((i) => i.item_type === "NEW").map(withImage),
     receipt_url: row.receipt_image_path
-      ? (receiptUrls.get(row.receipt_image_path) ?? undefined)
+      ? (receiptUrls.get(row.receipt_image_path) ?? null)
       : null,
     profit_delta:
       Math.round(
@@ -496,10 +496,10 @@ export async function getAdjustmentById(
 
   return {
     ...row,
-    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? undefined) : null,
+    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? null) : null,
     items: items.map((item) => ({
       ...item,
-      image_url: images.get(item.variant_id) ?? undefined,
+      image_url: images.get(item.variant_id) ?? null,
     })),
   };
 }
@@ -650,7 +650,7 @@ export async function getSaleHeaderForReturn(saleId: string): Promise<{
     sale_number: row.sale_number,
     sale_date: row.sale_date,
     customer_id: row.customer_id,
-    customer_name: row.customer?.name ?? undefined,
+    customer_name: row.customer?.name ?? null,
     total_amount: Number(row.total_amount),
     item_count: count ?? 0,
   };
@@ -681,10 +681,10 @@ export async function searchCountableVariants(
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_inventory", {
     p_search: search?.trim() || undefined,
-    p_category_id: null,
-    p_supplier_id: null,
-    p_color: null,
-    p_size: null,
+    p_category_id: undefined,
+    p_supplier_id: undefined,
+    p_color: undefined,
+    p_size: undefined,
     p_stock_status: "ALL",
     p_low_stock_threshold: 5,
     p_limit: limit,
@@ -709,6 +709,6 @@ export async function searchCountableVariants(
     size: row.size,
     current_stock: row.current_stock,
     is_active: row.is_active,
-    image_url: row.primary_image_path ? (urls.get(row.primary_image_path) ?? undefined) : null,
+    image_url: row.primary_image_path ? (urls.get(row.primary_image_path) ?? null) : null,
   }));
 }

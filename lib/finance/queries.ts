@@ -123,7 +123,7 @@ export async function getAccountById(id: string): Promise<AccountBalance | null>
     console.error("[finance] getAccountById:", error.message);
     throw new Error("تعذر تحميل الحساب.");
   }
-  return (data as AccountBalance | null) ?? undefined;
+  return (data as AccountBalance | null) ?? null;
 }
 
 export async function getAccountLedger(
@@ -285,7 +285,7 @@ export async function getExpenseById(id: string): Promise<ExpenseWithDetails | n
     const { data: signed } = await supabase.storage
       .from(EXPENSE_RECEIPTS_BUCKET)
       .createSignedUrl(row.receipt_image_path, EXPENSE_RECEIPT_URL_TTL_SECONDS);
-    receiptUrl = signed?.signedUrl ?? undefined;
+    receiptUrl = signed?.signedUrl ?? null;
   }
 
   let actorName: string | null = null;
@@ -297,7 +297,7 @@ export async function getExpenseById(id: string): Promise<ExpenseWithDetails | n
         .select("full_name")
         .eq("id", row.created_by)
         .maybeSingle();
-      actorName = (profile as { full_name: string } | null)?.full_name ?? undefined;
+      actorName = (profile as { full_name: string } | null)?.full_name ?? null;
     } catch (error) {
       console.error("[finance] actor lookup:", error);
     }
