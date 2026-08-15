@@ -41,8 +41,10 @@ export default async function ProductsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { profile } = await requirePermission("VIEW_PRODUCTS");
-  const params = await searchParams;
+  const [{ profile }, params] = await Promise.all([
+    requirePermission("VIEW_PRODUCTS"),
+    searchParams,
+  ]);
 
   const status =
     params.status === "ACTIVE" || params.status === "INACTIVE"

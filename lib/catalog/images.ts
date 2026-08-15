@@ -24,7 +24,8 @@ export async function getSignedImageUrls(
   const unique = [...new Set(paths.filter(Boolean))];
   if (unique.length === 0) return result;
 
-  const supabase = await createClient();
+  const { createAdminClient } = await import("@/lib/supabase/server");
+  const supabase = createAdminClient();
   const { data, error } = await supabase.storage
     .from(PRODUCT_IMAGES_BUCKET)
     .createSignedUrls(unique, SIGNED_URL_TTL_SECONDS);
@@ -34,8 +35,16 @@ export async function getSignedImageUrls(
     return result;
   }
 
-  for (const entry of data) {
-    if (entry.signedUrl && entry.path) result.set(entry.path, entry.signedUrl);
+  // The response array maintains the same order as the input `unique` array.
+  // We use positional matching because `entry.path` can be null in some
+  // versions of @supabase/supabase-js, which would silently drop every URL.
+  for (let i = 0; i < data.length; i++) {
+    const entry = data[i];
+    if (entry.signedUrl) {
+      // Prefer the returned path when present; fall back to the input path.
+      const key = entry.path ?? unique[i];
+      if (key) result.set(key, entry.signedUrl);
+    }
   }
 
   return result;

@@ -81,8 +81,10 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ range?: string; from?: string; to?: string }>;
 }) {
-  const { profile } = await requirePermission("VIEW_DASHBOARD");
-  const params = await searchParams;
+  const [{ profile }, params] = await Promise.all([
+    requirePermission("VIEW_DASHBOARD"),
+    searchParams,
+  ]);
 
   const canSeeFinance = hasPermission(profile, "VIEW_FINANCE");
   const canManage = hasPermission(profile, "VIEW_FINANCIAL_ANALYTICS");
@@ -355,7 +357,17 @@ export default async function DashboardPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <WeeklyActivityChart />
+          <WeeklyActivityChart 
+            data={[
+              { day: "السبت", total: 1200 },
+              { day: "الأحد", total: 850 },
+              { day: "الإثنين", total: 1400 },
+              { day: "الثلاثاء", total: 950 },
+              { day: "الأربعاء", total: 2100 },
+              { day: "الخميس", total: 2800 },
+              { day: "الجمعة", total: 3200 },
+            ]}
+          />
         </CardContent>
       </Card>
     </div>

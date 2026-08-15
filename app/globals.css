@@ -59,7 +59,7 @@
  * accent and set on a soft sand-grey canvas. Quiet, premium, unbranded-admin.
  */
 :root {
-  --background: oklch(0.955 0.003 106);
+  --background: oklch(1 0 0);
   --foreground: oklch(0.215 0.012 160);
 
   --card: oklch(1 0 0);
@@ -218,13 +218,12 @@
  * The trade: a table wider than its container gives no visual hint that it
  * scrolls. It still does — shift-wheel, drag, or swipe on touch.
  */
-* {
+.no-scrollbar {
   scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-*::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
