@@ -224,18 +224,13 @@ export async function listProducts(
 /** Distinct brands, for the brand filter dropdown. */
 export async function listBrands(): Promise<string[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("brand")
-    .not("brand", "is", null)
-    .order("brand");
+  const { data, error } = await supabase.rpc("get_distinct_brands");
 
-  if (error) return [];
-  const brands = new Set<string>();
-  for (const row of (data ?? []) as { brand: string | null }[]) {
-    if (row.brand?.trim()) brands.add(row.brand.trim());
+  if (error) {
+    console.error("[catalog] listBrands:", error.message);
+    return [];
   }
-  return [...brands].sort((a, b) => a.localeCompare(b, "ar"));
+  return ((data ?? []) as string[]).sort((a, b) => a.localeCompare(b, "ar"));
 }
 
 /** Full product with category, variants (incl. stock), and signed images. */
@@ -565,28 +560,21 @@ export async function listVariantFacets(): Promise<{
   sizes: string[];
 }> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("product_variants")
-    .select("color, size");
+  const { data, error } = await supabase.rpc("get_variant_facets");
 
   if (error) {
     console.error("[catalog] listVariantFacets:", error.message);
     return { colors: [], sizes: [] };
   }
 
-  const colors = new Set<string>();
-  const sizes = new Set<string>();
-  for (const row of (data ?? []) as {
-    color: string | null;
-    size: string | null;
-  }[]) {
-    if (row.color?.trim()) colors.add(row.color.trim());
-    if (row.size?.trim()) sizes.add(row.size.trim());
-  }
+  const facets = (data as { colors: string[]; sizes: string[] }) ?? {
+    colors: [],
+    sizes: [],
+  };
 
   return {
-    colors: [...colors].sort((a, b) => a.localeCompare(b, "ar")),
-    sizes: [...sizes].sort((a, b) =>
+    colors: (facets.colors ?? []).sort((a, b) => a.localeCompare(b, "ar")),
+    sizes: (facets.sizes ?? []).sort((a, b) =>
       a.localeCompare(b, "ar", { numeric: true }),
     ),
   };

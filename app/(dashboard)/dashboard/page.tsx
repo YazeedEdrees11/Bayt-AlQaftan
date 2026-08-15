@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   ArrowLeftRight,
   Banknote,
@@ -94,18 +95,13 @@ export default async function DashboardPage({
   const preset = isDatePreset(params.range) ? params.range : "month";
   const period = resolveDateRange(preset, { from: params.from, to: params.to });
 
-  // Four independent pictures: today's trading, what the shop holds, how the
-  // chosen period compares with the one before it, and what needs attention.
-  // They answer different questions and are never summed together.
-  const [summary, finance, kpis, comparison, alerts] = await Promise.all([
+  // Only query the fast daily/today metrics here. The heavy manager metrics
+  // are deferred to the ManagementDashboardSection and streamed via Suspense.
+  const [summary, finance] = await Promise.all([
     hasPermission(profile, "VIEW_INVENTORY") ? getInventorySummary() : null,
     canSeeFinance ? getFinanceSummary(today.from, today.to) : null,
-    canManage ? getManagementKpis(period) : null,
-    canManage ? getPeriodComparison(period) : null,
-    canManage ? getManagementAlerts() : null,
   ]);
 
-  const insights = kpis && comparison ? buildInsights(kpis, comparison) : [];
   const presetLabel = DATE_PRESETS.find((o) => o.value === preset)?.label ?? "";
 
   const visibleKpis = KPIS.filter((kpi) =>
@@ -201,152 +197,14 @@ export default async function DashboardPage({
         ))}
       </section>
 
-      {canManage && kpis ? (
-        <>
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <div>
-              <h2 className="text-lg font-semibold">مؤشرات الإدارة</h2>
-              <p className="text-muted-foreground text-sm">
-                {presetLabel} — مقارنة بالفترة السابقة لها بنفس الطول.
-              </p>
-            </div>
-            <DashboardRangePicker />
-          </div>
-
-          <section
-            aria-label="مؤشرات الفترة"
-            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
-          >
-            <StatCard
-              label="صافي المبيعات"
-              icon={ShoppingBag}
-              accent
-              value={
-                Number(kpis.net_sales) !== 0 ? formatMoney(kpis.net_sales) : undefined
-              }
-              hint={`${formatNumber(kpis.order_count)} فاتورة · متوسط ${formatMoney(kpis.average_order_value)}`}
-            />
-            <StatCard
-              label="الربح الإجمالي"
-              icon={TrendingUp}
-              value={
-                Number(kpis.net_sales) !== 0 ? formatMoney(kpis.gross_profit) : undefined
-              }
-              hint={`هامش ${formatPercent(kpis.gross_margin)}`}
-            />
-            <StatCard
-              label="الربح التشغيلي"
-              icon={Percent}
-              value={
-                Number(kpis.net_sales) !== 0 || Number(kpis.operating_profit) !== 0
-                  ? formatMoney(kpis.operating_profit)
-                  : undefined
-              }
-              hint={`المصاريف ${formatPercent(kpis.expense_ratio)} من المبيعات`}
-            />
-            <StatCard
-              label="دوران المخزون"
-              icon={ArrowLeftRight}
-              value={
-                Number(kpis.inventory_cost) > 0
-                  ? formatNumber(
-                      Math.round(Number(kpis.inventory_turnover) * 100) / 100,
-                    )
-                  : undefined
-              }
-              hint={`مخزون بتكلفة ${formatMoney(kpis.inventory_cost)}`}
-            />
-          </section>
-
-          <div className="grid gap-4 xl:grid-cols-3">
-            <Card className="xl:col-span-2">
-              <CardHeader>
-                <CardTitle>مقارنة بالفترة السابقة</CardTitle>
-                <CardDescription>
-                  اللون يتبع ما إذا كانت الحركة في صالح المحل، لا اتجاه السهم —
-                  ارتفاع المصاريف والمرتجعات ليس خبراً جيداً.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ComparisonGrid rows={comparison ?? []} />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>تنبيهات</CardTitle>
-                <CardDescription>
-                  حدود التنبيه قابلة للتعديل من إعدادات التقارير.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ManagementAlerts alerts={alerts ?? []} />
-              </CardContent>
-            </Card>
-          </div>
-
-          {insights.length > 0 ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="bg-accent text-accent-foreground flex size-8 items-center justify-center rounded-lg">
-                    <Lightbulb className="size-4" strokeWidth={1.8} />
-                  </span>
-                  ملاحظات على الفترة
-                </CardTitle>
-                <CardDescription>
-                  ملاحظات مشتقة من الأرقام أعلاه بقواعد ثابتة — لا تقديرات ولا
-                  توقعات.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {insights.map((insight) => {
-                  const content = (
-                    <span className="text-sm leading-relaxed">{insight.text}</span>
-                  );
-                  const className = cn(
-                    "block rounded-xl border p-3",
-                    insight.tone === "positive" && "border-success/30 bg-success/5",
-                    insight.tone === "negative" &&
-                      "border-destructive/30 bg-destructive/5",
-                    insight.tone === "neutral" && "border-border/70",
-                    insight.href && "hover:border-primary/40 transition-colors",
-                  );
-                  return insight.href ? (
-                    <Link key={insight.key} href={insight.href} className={className}>
-                      {content}
-                    </Link>
-                  ) : (
-                    <div key={insight.key} className={className}>
-                      {content}
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          ) : null}
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <QuickLink
-              href="/reports/customers/debt"
-              icon={Users}
-              label="ذمم العملاء"
-              value={formatMoney(kpis.customer_receivables)}
-            />
-            <QuickLink
-              href="/reports/suppliers/debt"
-              icon={Banknote}
-              label="ذمم الموردين"
-              value={formatMoney(kpis.supplier_payables)}
-            />
-            <QuickLink
-              href="/reports/inventory/low-stock"
-              icon={Boxes}
-              label="مخزون منخفض"
-              value={`${formatNumber(kpis.low_stock_count)} موديل`}
-            />
-          </div>
-        </>
+      {canManage ? (
+        <Suspense fallback={<div className="h-[400px] flex items-center justify-center text-sm text-muted-foreground animate-pulse">جاري تحميل مؤشرات الإدارة...</div>}>
+          <ManagementDashboardSection
+            period={period}
+            presetLabel={presetLabel}
+            preset={preset}
+          />
+        </Suspense>
       ) : null}
 
       <Card>
@@ -371,6 +229,174 @@ export default async function DashboardPage({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+async function ManagementDashboardSection({
+  period,
+  presetLabel,
+  preset,
+}: {
+  period: { from: string; to: string };
+  presetLabel: string;
+  preset: string;
+}) {
+  const [kpis, comparison, alerts] = await Promise.all([
+    getManagementKpis(period),
+    getPeriodComparison(period),
+    getManagementAlerts(),
+  ]);
+
+  if (!kpis) return null;
+
+  const insights = comparison ? buildInsights(kpis, comparison) : [];
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <div>
+          <h2 className="text-lg font-semibold">مؤشرات الإدارة</h2>
+          <p className="text-muted-foreground text-sm">
+            {presetLabel} — مقارنة بالفترة السابقة لها بنفس الطول.
+          </p>
+        </div>
+        <DashboardRangePicker />
+      </div>
+
+      <section
+        aria-label="مؤشرات الفترة"
+        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      >
+        <StatCard
+          label="صافي المبيعات"
+          icon={ShoppingBag}
+          accent
+          value={
+            Number(kpis.net_sales) !== 0 ? formatMoney(kpis.net_sales) : undefined
+          }
+          hint={`${formatNumber(kpis.order_count)} فاتورة · متوسط ${formatMoney(kpis.average_order_value)}`}
+        />
+        <StatCard
+          label="الربح الإجمالي"
+          icon={TrendingUp}
+          value={
+            Number(kpis.net_sales) !== 0 ? formatMoney(kpis.gross_profit) : undefined
+          }
+          hint={`هامش ${formatPercent(kpis.gross_margin)}`}
+        />
+        <StatCard
+          label="الربح التشغيلي"
+          icon={Percent}
+          value={
+            Number(kpis.net_sales) !== 0 || Number(kpis.operating_profit) !== 0
+              ? formatMoney(kpis.operating_profit)
+              : undefined
+          }
+          hint={`المصاريف ${formatPercent(kpis.expense_ratio)} من المبيعات`}
+        />
+        <StatCard
+          label="دوران المخزون"
+          icon={ArrowLeftRight}
+          value={
+            Number(kpis.inventory_cost) > 0
+              ? formatNumber(
+                  Math.round(Number(kpis.inventory_turnover) * 100) / 100,
+                )
+              : undefined
+          }
+          hint={`مخزون بتكلفة ${formatMoney(kpis.inventory_cost)}`}
+        />
+      </section>
+
+      <div className="grid gap-4 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <CardTitle>مقارنة بالفترة السابقة</CardTitle>
+            <CardDescription>
+              اللون يتبع ما إذا كانت الحركة في صالح المحل، لا اتجاه السهم —
+              ارتفاع المصاريف والمرتجعات ليس خبراً جيداً.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ComparisonGrid rows={comparison ?? []} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>تنبيهات</CardTitle>
+            <CardDescription>
+              حدود التنبيه قابلة للتعديل من إعدادات التقارير.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ManagementAlerts alerts={alerts ?? []} />
+          </CardContent>
+        </Card>
+      </div>
+
+      {insights.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span className="bg-accent text-accent-foreground flex size-8 items-center justify-center rounded-lg">
+                <Lightbulb className="size-4" strokeWidth={1.8} />
+              </span>
+              ملاحظات على الفترة
+            </CardTitle>
+            <CardDescription>
+              ملاحظات مشتقة من الأرقام أعلاه بقواعد ثابتة — لا تقديرات ولا
+              توقعات.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {insights.map((insight) => {
+              const content = (
+                <span className="text-sm leading-relaxed">{insight.text}</span>
+              );
+              const className = cn(
+                "block rounded-xl border p-3",
+                insight.tone === "positive" && "border-success/30 bg-success/5",
+                insight.tone === "negative" &&
+                  "border-destructive/30 bg-destructive/5",
+                insight.tone === "neutral" && "border-border/70",
+                insight.href && "hover:border-primary/40 transition-colors",
+              );
+              return insight.href ? (
+                <Link key={insight.key} href={insight.href} className={className}>
+                  {content}
+                </Link>
+              ) : (
+                <div key={insight.key} className={className}>
+                  {content}
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <QuickLink
+          href="/reports/customers/debt"
+          icon={Users}
+          label="ذمم العملاء"
+          value={formatMoney(kpis.customer_receivables)}
+        />
+        <QuickLink
+          href="/reports/suppliers/debt"
+          icon={Banknote}
+          label="ذمم الموردين"
+          value={formatMoney(kpis.supplier_payables)}
+        />
+        <QuickLink
+          href="/reports/inventory/low-stock"
+          icon={Boxes}
+          label="مخزون منخفض"
+          value={`${formatNumber(kpis.low_stock_count)} موديل`}
+        />
+      </div>
+    </>
   );
 }
 
