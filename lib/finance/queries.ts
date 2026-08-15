@@ -59,8 +59,8 @@ export async function getFinanceSummary(
 ): Promise<FinanceSummary> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("finance_summary", {
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
   });
 
   if (error) {
@@ -171,12 +171,12 @@ export async function listFinancialTransactions({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("search_financial_transactions", {
-    p_search: search?.trim() || null,
-    p_account: accountId ?? null,
+    p_search: search?.trim() || undefined,
+    p_account: accountId ?? undefined,
     p_type: type,
     p_direction: direction,
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
   });
@@ -239,15 +239,15 @@ export async function listExpenses({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("search_expenses", {
-    p_search: search?.trim() || null,
-    p_category: categoryId ?? null,
+    p_search: search?.trim() || undefined,
+    p_category: categoryId ?? undefined,
     p_method: method,
-    p_account: accountId ?? null,
+    p_account: accountId ?? undefined,
     p_status: status,
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
-    p_min_amount: minAmount ?? null,
-    p_max_amount: maxAmount ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
+    p_min_amount: minAmount ?? undefined,
+    p_max_amount: maxAmount ?? undefined,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
   });
@@ -319,8 +319,8 @@ export async function getExpenseReport(
 ): Promise<ExpenseReportRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("expense_report", {
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
   });
 
   if (error) {
@@ -340,8 +340,8 @@ export async function getPaymentMethodBreakdown(
 ): Promise<PaymentMethodBreakdownRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("payment_method_breakdown", {
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
   });
   if (error) {
     console.error("[finance] getPaymentMethodBreakdown:", error.message);
@@ -357,8 +357,8 @@ export async function getFinanceSeries(
 ): Promise<FinanceSeriesPoint[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("finance_series", {
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
     p_bucket: bucket,
   });
   if (error) {

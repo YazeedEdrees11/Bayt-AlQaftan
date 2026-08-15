@@ -144,7 +144,7 @@ export async function getSupplierById(id: string): Promise<Supplier | null> {
     console.error("[catalog] getSupplierById:", error.message);
     throw new Error("تعذر تحميل بيانات المورد.");
   }
-  return (data as Supplier) ?? null;
+  return (data as Supplier) ?? undefined;
 }
 
 /** How many variants name this supplier as their default. */
@@ -186,13 +186,13 @@ export async function listProducts(
   const size = normalizePageSize(params.perPage);
 
   const { data, error } = await supabase.rpc("search_products", {
-    p_search: params.search?.trim() || null,
-    p_category_id: params.categoryId || null,
-    p_brand: params.brand || null,
+    p_search: params.search?.trim() || undefined,
+    p_category_id: params.categoryId || undefined,
+    p_brand: params.brand || undefined,
     p_status: params.status ?? "ALL",
     p_stock_status: params.stockStatus ?? "ALL",
-    p_min_price: params.minPrice ?? null,
-    p_max_price: params.maxPrice ?? null,
+    p_min_price: params.minPrice ?? undefined,
+    p_max_price: params.maxPrice ?? undefined,
     p_sort: normalizeSort(params.sort),
     p_low_stock_threshold: LOW_STOCK_THRESHOLD,
     p_limit: size,
@@ -224,18 +224,13 @@ export async function listProducts(
 /** Distinct brands, for the brand filter dropdown. */
 export async function listBrands(): Promise<string[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("brand")
-    .not("brand", "is", null)
-    .order("brand");
+  const { data, error } = await supabase.rpc("get_distinct_brands");
 
-  if (error) return [];
-  const brands = new Set<string>();
-  for (const row of (data ?? []) as { brand: string | null }[]) {
-    if (row.brand?.trim()) brands.add(row.brand.trim());
+  if (error) {
+    console.error("[catalog] listBrands:", error.message);
+    return [];
   }
-  return [...brands].sort((a, b) => a.localeCompare(b, "ar"));
+  return ((data ?? []) as string[]).sort((a, b) => a.localeCompare(b, "ar"));
 }
 
 /** Full product with category, variants (incl. stock), and signed images. */
@@ -333,7 +328,7 @@ export async function getProductById(
 
   return {
     ...baseProduct,
-    category: category ?? null,
+    category: category ?? undefined,
     variants,
     images: images.map((image) => ({
       ...image,
@@ -500,11 +495,11 @@ export async function listInventory(
   const size = normalizePageSize(params.perPage);
 
   const { data, error } = await supabase.rpc("search_inventory", {
-    p_search: params.search?.trim() || null,
-    p_category_id: params.categoryId || null,
-    p_supplier_id: params.supplierId || null,
-    p_color: params.color || null,
-    p_size: params.size || null,
+    p_search: params.search?.trim() || undefined,
+    p_category_id: params.categoryId || undefined,
+    p_supplier_id: params.supplierId || undefined,
+    p_color: params.color || undefined,
+    p_size: params.size || undefined,
     p_stock_status: params.stockStatus ?? "ALL",
     p_low_stock_threshold: LOW_STOCK_THRESHOLD,
     p_limit: size,
@@ -565,28 +560,21 @@ export async function listVariantFacets(): Promise<{
   sizes: string[];
 }> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("product_variants")
-    .select("color, size");
+  const { data, error } = await supabase.rpc("get_variant_facets");
 
   if (error) {
     console.error("[catalog] listVariantFacets:", error.message);
     return { colors: [], sizes: [] };
   }
 
-  const colors = new Set<string>();
-  const sizes = new Set<string>();
-  for (const row of (data ?? []) as {
-    color: string | null;
-    size: string | null;
-  }[]) {
-    if (row.color?.trim()) colors.add(row.color.trim());
-    if (row.size?.trim()) sizes.add(row.size.trim());
-  }
+  const facets = (data as { colors: string[]; sizes: string[] }) ?? {
+    colors: [],
+    sizes: [],
+  };
 
   return {
-    colors: [...colors].sort((a, b) => a.localeCompare(b, "ar")),
-    sizes: [...sizes].sort((a, b) =>
+    colors: (facets.colors ?? []).sort((a, b) => a.localeCompare(b, "ar")),
+    sizes: (facets.sizes ?? []).sort((a, b) =>
       a.localeCompare(b, "ar", { numeric: true }),
     ),
   };

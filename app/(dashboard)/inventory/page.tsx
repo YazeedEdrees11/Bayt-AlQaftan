@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import {
   Boxes,
   CircleAlert,
@@ -33,6 +34,16 @@ import { getStockAlertReport } from "@/lib/reports/queries";
 
 export const metadata: Metadata = { title: "المخزون" };
 
+async function LowStockChartSection() {
+  const stockAlerts = await getStockAlertReport({ mode: "LOW", perPage: 5 });
+  const chartData = stockAlerts.rows.map((row) => ({
+    name: row.product_name || "بدون اسم",
+    stock: row.current_stock,
+  }));
+
+  return <LowStockChart data={chartData.length > 0 ? chartData : undefined} />;
+}
+
 export default async function InventoryPage({
   searchParams,
 }: {
@@ -59,7 +70,7 @@ export default async function InventoryPage({
       : "ALL"
   ) as StockStatusFilter;
 
-  const [summary, data, categories, suppliers, facets, stockAlerts] = await Promise.all([
+  const [summary, data, categories, suppliers, facets] = await Promise.all([
     getInventorySummary(),
     listInventory({
       search: params.q,
@@ -74,13 +85,10 @@ export default async function InventoryPage({
     listCategories(),
     listActiveSuppliers(),
     listVariantFacets(),
-    getStockAlertReport({ mode: "LOW", perPage: 5 }),
+    // getStockAlertReport deferred to LowStockChartSection
   ]);
 
-  const chartData = stockAlerts.rows.map((row) => ({
-    name: row.product_name || "بدون اسم",
-    stock: row.current_stock,
-  }));
+
 
   // Every figure below comes from the ledger — nothing is estimated.
   const hasData = summary.total_variants > 0;
@@ -166,7 +174,9 @@ export default async function InventoryPage({
             <p className="text-sm text-muted-foreground">أكثر المنتجات نقصاً في المخزون وبحاجة لإعادة طلب.</p>
           </div>
           <div className="p-6 pt-0">
-            <LowStockChart data={chartData.length > 0 ? chartData : undefined} />
+            <Suspense fallback={<div className="h-[300px] flex items-center justify-center text-sm text-muted-foreground">جاري تحميل البيانات...</div>}>
+              <LowStockChartSection />
+            </Suspense>
           </div>
         </div>
       </div>

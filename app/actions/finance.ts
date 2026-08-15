@@ -474,7 +474,7 @@ export async function backfillFinancialTransactionsAction(): Promise<
   if (!auth.ok) return { ok: false, error: auth.error };
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("backfill_financial_transactions", {});
+  const { data, error } = await supabase.rpc("backfill_financial_transactions");
 
   if (error || !data) {
     const translated = translateFinanceError(error, "تعذر تنفيذ الترحيل المالي.");

@@ -46,7 +46,7 @@ export async function callIdempotent<T = unknown>(
     p_payload: body as Json,
   });
 
-  return { data: (data as T) ?? null, error };
+  return { data: (data as T) ?? undefined, error };
 }
 
 /** Was this response the stored answer to an earlier identical submission? */

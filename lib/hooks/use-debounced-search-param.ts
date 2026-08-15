@@ -66,7 +66,7 @@ export function useDebouncedSearchParam({
     const next = value.trim();
     if (next === (searchParams.get(key) ?? "")) return;
 
-    const timer = setTimeout(() => setParams({ [key]: next || null }), delay);
+    const timer = setTimeout(() => setParams({ [key]: next || undefined }), delay);
     return () => clearTimeout(timer);
   }, [value, searchParams, setParams, key, delay]);
 }
