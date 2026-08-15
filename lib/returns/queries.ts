@@ -156,13 +156,13 @@ export async function listReturns({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("search_returns", {
-    p_search: search?.trim() || null,
-    p_customer_id: customerId ?? null,
+    p_search: search?.trim() || undefined,
+    p_customer_id: customerId ?? undefined,
     p_status: status,
     p_refund_status: refundStatus,
     p_reason: reason,
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
   });
@@ -182,8 +182,8 @@ export async function getReturnsSummary(
 ): Promise<ReturnsSummary> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("returns_summary", {
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
   });
 
   if (error) {
@@ -226,7 +226,7 @@ export async function getReturnableItems(
   );
   return rows.map((row) => ({
     ...row,
-    image_url: row.image_path ? (signed.get(row.image_path) ?? null) : null,
+    image_url: row.image_path ? (signed.get(row.image_path) ?? undefined) : null,
   }));
 }
 
@@ -282,10 +282,10 @@ export async function getReturnById(
     ...row,
     sale_number: row.sale?.sale_number ?? "",
     customer: row.customer,
-    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? null) : null,
+    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? undefined) : null,
     items: items.map((item) => ({
       ...item,
-      image_url: images.get(item.variant_id) ?? null,
+      image_url: images.get(item.variant_id) ?? undefined,
       // Reversing a sale reverses its cost with it.
       gross_profit:
         Math.round((Number(item.total_amount) - Number(item.total_cost)) * 100) / 100,
@@ -293,9 +293,9 @@ export async function getReturnById(
     refunds: refunds.map((refund) => ({
       ...refund,
       receipt_url: refund.receipt_image_path
-        ? (receiptUrls.get(refund.receipt_image_path) ?? null)
+        ? (receiptUrls.get(refund.receipt_image_path) ?? undefined)
         : null,
-      actor_name: refund.created_by ? (actorNames.get(refund.created_by) ?? null) : null,
+      actor_name: refund.created_by ? (actorNames.get(refund.created_by) ?? undefined) : null,
     })),
     profit_reversal:
       Math.round((Number(row.refund_amount) - Number(row.total_cost)) * 100) / 100,
@@ -330,11 +330,11 @@ export async function listExchanges({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("search_exchanges", {
-    p_search: search?.trim() || null,
-    p_customer_id: customerId ?? null,
+    p_search: search?.trim() || undefined,
+    p_customer_id: customerId ?? undefined,
     p_status: status,
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
   });
@@ -391,18 +391,18 @@ export async function getExchangeById(
 
   const withImage = (item: ExchangeItem) => ({
     ...item,
-    image_url: images.get(item.variant_id) ?? null,
+    image_url: images.get(item.variant_id) ?? undefined,
   });
 
   return {
     ...row,
     sale_number: row.sale?.sale_number ?? "",
     customer: row.customer,
-    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? null) : null,
+    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? undefined) : null,
     returned_items: items.filter((i) => i.item_type === "RETURNED").map(withImage),
     new_items: items.filter((i) => i.item_type === "NEW").map(withImage),
     receipt_url: row.receipt_image_path
-      ? (receiptUrls.get(row.receipt_image_path) ?? null)
+      ? (receiptUrls.get(row.receipt_image_path) ?? undefined)
       : null,
     profit_delta:
       Math.round(
@@ -440,11 +440,11 @@ export async function listAdjustments({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("search_adjustments", {
-    p_search: search?.trim() || null,
+    p_search: search?.trim() || undefined,
     p_reason: reason,
     p_status: status,
-    p_date_from: from ?? null,
-    p_date_to: to ?? null,
+    p_date_from: from ?? undefined,
+    p_date_to: to ?? undefined,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
   });
@@ -496,10 +496,10 @@ export async function getAdjustmentById(
 
   return {
     ...row,
-    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? null) : null,
+    created_by_name: row.created_by ? (actorNames.get(row.created_by) ?? undefined) : null,
     items: items.map((item) => ({
       ...item,
-      image_url: images.get(item.variant_id) ?? null,
+      image_url: images.get(item.variant_id) ?? undefined,
     })),
   };
 }
@@ -650,7 +650,7 @@ export async function getSaleHeaderForReturn(saleId: string): Promise<{
     sale_number: row.sale_number,
     sale_date: row.sale_date,
     customer_id: row.customer_id,
-    customer_name: row.customer?.name ?? null,
+    customer_name: row.customer?.name ?? undefined,
     total_amount: Number(row.total_amount),
     item_count: count ?? 0,
   };
@@ -680,7 +680,7 @@ export async function searchCountableVariants(
 > {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_inventory", {
-    p_search: search?.trim() || null,
+    p_search: search?.trim() || undefined,
     p_category_id: null,
     p_supplier_id: null,
     p_color: null,
@@ -709,6 +709,6 @@ export async function searchCountableVariants(
     size: row.size,
     current_stock: row.current_stock,
     is_active: row.is_active,
-    image_url: row.primary_image_path ? (urls.get(row.primary_image_path) ?? null) : null,
+    image_url: row.primary_image_path ? (urls.get(row.primary_image_path) ?? undefined) : null,
   }));
 }

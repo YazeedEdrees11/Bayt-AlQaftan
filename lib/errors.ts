@@ -104,7 +104,7 @@ export function handleError(
       timestamp: new Date().toISOString(),
       requestId,
       operation: context.operation,
-      userId: context.userId ?? null,
+      userId: context.userId ?? undefined,
       code,
       // The raw text is for whoever reads the log, and goes no further.
       detail: raw.slice(0, 500),
@@ -159,9 +159,9 @@ export async function recordEvent(event: {
       p_category: event.category,
       p_operation: event.operation,
       p_message: event.message,
-      p_code: event.code ?? null,
-      p_request_id: event.requestId ?? null,
-      p_metadata: (event.metadata ?? null) as never,
+      p_code: event.code ?? undefined,
+      p_request_id: event.requestId ?? undefined,
+      p_metadata: (event.metadata ?? undefined) as never,
     });
   } catch (error) {
     console.error("[errors] could not record event:", error);

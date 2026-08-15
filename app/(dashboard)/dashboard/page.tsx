@@ -237,7 +237,7 @@ async function ManagementDashboardSection({
   presetLabel,
   preset,
 }: {
-  period: { from: string; to: string };
+  period: { from?: string; to?: string };
   presetLabel: string;
   preset: string;
 }) {

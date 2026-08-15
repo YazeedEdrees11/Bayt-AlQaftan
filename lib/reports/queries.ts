@@ -69,10 +69,10 @@ export async function getSalesReport(
 ): Promise<SalesReport> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_sales_report", {
-    p_date_from: range.from ?? null,
-    p_date_to: range.to ?? null,
-    p_customer: customerId ?? null,
-    p_category: categoryId ?? null,
+    p_date_from: range.from ?? undefined,
+    p_date_to: range.to ?? undefined,
+    p_customer: customerId ?? undefined,
+    p_category: categoryId ?? undefined,
     p_method: method,
   });
   if (error) {
@@ -88,8 +88,8 @@ export async function getSalesSeries(
 ): Promise<SalesSeriesPoint[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_sales_series", {
-    p_date_from: range.from ?? null,
-    p_date_to: range.to ?? null,
+    p_date_from: range.from ?? undefined,
+    p_date_to: range.to ?? undefined,
     p_bucket: bucket,
   });
   if (error) {
@@ -110,9 +110,9 @@ export async function getPurchaseReport(
 ): Promise<PurchaseReport> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_purchase_report", {
-    p_date_from: range.from ?? null,
-    p_date_to: range.to ?? null,
-    p_supplier: supplierId ?? null,
+    p_date_from: range.from ?? undefined,
+    p_date_to: range.to ?? undefined,
+    p_supplier: supplierId ?? undefined,
   });
   if (error) {
     console.error("[reports] getPurchaseReport:", error.message);
@@ -134,8 +134,8 @@ const EMPTY_PROFIT: ProfitReport = {
 export async function getProfitReport(range: ReportRange = {}): Promise<ProfitReport> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_profit_report", {
-    p_date_from: range.from ?? null,
-    p_date_to: range.to ?? null,
+    p_date_from: range.from ?? undefined,
+    p_date_to: range.to ?? undefined,
   });
   if (error) {
     console.error("[reports] getProfitReport:", error.message);
@@ -151,8 +151,8 @@ export async function getProfitByDimension(
 ): Promise<ProfitDimensionRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_profit_by_dimension", {
-    p_date_from: range.from ?? null,
-    p_date_to: range.to ?? null,
+    p_date_from: range.from ?? undefined,
+    p_date_to: range.to ?? undefined,
     p_dimension: dimension,
     p_limit: limit,
   });
@@ -189,11 +189,11 @@ export async function getProductReport({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("get_product_report", {
-    p_date_from: range.from ?? null,
-    p_date_to: range.to ?? null,
-    p_category: categoryId ?? null,
-    p_brand: brand ?? null,
-    p_supplier: supplierId ?? null,
+    p_date_from: range.from ?? undefined,
+    p_date_to: range.to ?? undefined,
+    p_category: categoryId ?? undefined,
+    p_brand: brand ?? undefined,
+    p_supplier: supplierId ?? undefined,
     p_sort: sort,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
@@ -228,7 +228,7 @@ export async function getStockAlertReport({
 
   const { data, error } = await supabase.rpc("get_stock_alert_report", {
     p_mode: mode,
-    p_category: categoryId ?? null,
+    p_category: categoryId ?? undefined,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
   });
@@ -275,9 +275,9 @@ export async function getInventoryMovementReport({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("get_inventory_movement_report", {
-    p_date_from: range.from ?? null,
-    p_date_to: range.to ?? null,
-    p_variant: variantId ?? null,
+    p_date_from: range.from ?? undefined,
+    p_date_to: range.to ?? undefined,
+    p_variant: variantId ?? undefined,
     p_type: type,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
@@ -350,8 +350,8 @@ const EMPTY_KPIS: ManagementKpis = {
 export async function getManagementKpis(range: ReportRange = {}): Promise<ManagementKpis> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_management_kpis", {
-    p_date_from: range.from ?? null,
-    p_date_to: range.to ?? null,
+    p_date_from: range.from ?? undefined,
+    p_date_to: range.to ?? undefined,
   });
   if (error) {
     console.error("[reports] getManagementKpis:", error.message);
@@ -363,8 +363,8 @@ export async function getManagementKpis(range: ReportRange = {}): Promise<Manage
 export async function getPeriodComparison(range: ReportRange = {}): Promise<ComparisonRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_period_comparison", {
-    p_date_from: range.from ?? null,
-    p_date_to: range.to ?? null,
+    p_date_from: range.from ?? undefined,
+    p_date_to: range.to ?? undefined,
   });
   if (error) {
     console.error("[reports] getPeriodComparison:", error.message);
@@ -409,7 +409,7 @@ export async function getDailyClosingSummary(date?: string): Promise<DailyClosin
 export async function getMonthlyPerformance(year?: number): Promise<PerformancePeriod[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_monthly_performance", {
-    p_year: year ?? null,
+    p_year: year ?? undefined,
   });
   if (error) {
     console.error("[reports] getMonthlyPerformance:", error.message);
@@ -449,5 +449,5 @@ export async function getReportSettings(): Promise<ReportSettings | null> {
     console.error("[reports] getReportSettings:", error.message);
     return null;
   }
-  return (data as ReportSettings | null) ?? null;
+  return (data as ReportSettings | null) ?? undefined;
 }

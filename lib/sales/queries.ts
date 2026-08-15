@@ -98,7 +98,7 @@ export async function listCustomers({
   const size = normalizePageSize(perPage);
 
   const { data, error } = await supabase.rpc("search_customers", {
-    p_search: search?.trim() || null,
+    p_search: search?.trim() || undefined,
     p_status: status,
     p_limit: size,
     p_offset: (currentPage - 1) * size,
@@ -126,7 +126,7 @@ export async function getCustomerById(id: string): Promise<Customer | null> {
     console.error("[sales] getCustomerById:", error.message);
     throw new Error("تعذر تحميل بيانات العميل.");
   }
-  return (data as Customer) ?? null;
+  return (data as Customer) ?? undefined;
 }
 
 /** Lightweight list for the sale screen's customer picker. */
@@ -221,8 +221,8 @@ export async function getCustomerPayments(
 
   return rows.map((row) => ({
     ...row,
-    receipt_url: row.receipt_image_path ? (receipts.get(row.receipt_image_path) ?? null) : null,
-    actor_name: row.created_by ? (actors.get(row.created_by) ?? null) : null,
+    receipt_url: row.receipt_image_path ? (receipts.get(row.receipt_image_path) ?? undefined) : null,
+    actor_name: row.created_by ? (actors.get(row.created_by) ?? undefined) : null,
   }));
 }
 
@@ -273,16 +273,16 @@ export async function listSales(
   const perPage = normalizePageSize(params.perPage ?? DEFAULT_PAGE_SIZE);
 
   const { data, error } = await supabase.rpc("search_sales", {
-    p_search: params.search?.trim() || null,
-    p_customer_id: params.customerId || null,
+    p_search: params.search?.trim() || undefined,
+    p_customer_id: params.customerId || undefined,
     p_payment_status: params.paymentStatus ?? "ALL",
     p_status: params.status ?? "ALL",
-    p_date_from: params.dateFrom || null,
-    p_date_to: params.dateTo || null,
-    p_min_amount: params.minAmount ?? null,
-    p_max_amount: params.maxAmount ?? null,
+    p_date_from: params.dateFrom || undefined,
+    p_date_to: params.dateTo || undefined,
+    p_min_amount: params.minAmount ?? undefined,
+    p_max_amount: params.maxAmount ?? undefined,
     p_payment_method: params.paymentMethod ?? "ALL",
-    p_category_id: params.categoryId || null,
+    p_category_id: params.categoryId || undefined,
     p_limit: perPage,
     p_offset: (page - 1) * perPage,
   });
@@ -389,15 +389,15 @@ export async function getSaleById(id: string): Promise<SaleWithDetails | null> {
   const itemsWithMedia: SaleItemWithMedia[] = allocated.map((item) => {
     const productId = productIdByVariant.get(item.variant_id);
     const path = productId ? imagePathByProduct.get(productId) : undefined;
-    return { ...item, image_url: path ? (signedImages.get(path) ?? null) : null };
+    return { ...item, image_url: path ? (signedImages.get(path) ?? undefined) : null };
   });
 
   const paymentsWithMedia: SalePaymentWithMedia[] = payments.map((payment) => ({
     ...payment,
     receipt_url: payment.receipt_image_path
-      ? (receiptUrls.get(payment.receipt_image_path) ?? null)
+      ? (receiptUrls.get(payment.receipt_image_path) ?? undefined)
       : null,
-    actor_name: payment.created_by ? (actorNames.get(payment.created_by) ?? null) : null,
+    actor_name: payment.created_by ? (actorNames.get(payment.created_by) ?? undefined) : null,
   }));
 
   const grossProfit = Math.round((Number(row.total_amount) - Number(row.total_cost)) * 100) / 100;
@@ -410,10 +410,10 @@ export async function getSaleById(id: string): Promise<SaleWithDetails | null> {
 
   return {
     ...rest,
-    customer: customer ?? null,
+    customer: customer ?? undefined,
     items: itemsWithMedia,
     payments: paymentsWithMedia,
-    created_by_name: rest.created_by ? (actorNames.get(rest.created_by) ?? null) : null,
+    created_by_name: rest.created_by ? (actorNames.get(rest.created_by) ?? undefined) : null,
     gross_profit: grossProfit,
     gross_margin: grossMargin,
   };
@@ -431,11 +431,11 @@ export async function searchSellableVariants(
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("search_inventory", {
-    p_search: search?.trim() || null,
-    p_category_id: null,
-    p_supplier_id: null,
-    p_color: null,
-    p_size: null,
+    p_search: search?.trim() || undefined,
+    p_category_id: undefined,
+    p_supplier_id: undefined,
+    p_color: undefined,
+    p_size: undefined,
     p_stock_status: "ALL",
     p_low_stock_threshold: 5,
     p_limit: limit,
@@ -463,7 +463,7 @@ export async function searchSellableVariants(
     selling_price: Number(row.selling_price),
     purchase_price: Number(row.purchase_price),
     current_stock: row.current_stock,
-    image_url: row.primary_image_path ? (urls.get(row.primary_image_path) ?? null) : null,
+    image_url: row.primary_image_path ? (urls.get(row.primary_image_path) ?? undefined) : null,
   }));
 }
 
@@ -477,8 +477,8 @@ export async function getSalesSummary(
 ): Promise<SalesSummary> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("sales_summary", {
-    p_date_from: dateFrom || null,
-    p_date_to: dateTo || null,
+    p_date_from: dateFrom || undefined,
+    p_date_to: dateTo || undefined,
   });
 
   if (error) {
@@ -506,8 +506,8 @@ export async function getTopProducts(
 ): Promise<TopProductRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("top_selling_products", {
-    p_date_from: dateFrom || null,
-    p_date_to: dateTo || null,
+    p_date_from: dateFrom || undefined,
+    p_date_to: dateTo || undefined,
     p_limit: limit,
   });
   if (error) return [];
@@ -521,8 +521,8 @@ export async function getTopCustomers(
 ): Promise<TopCustomerRow[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("top_customers", {
-    p_date_from: dateFrom || null,
-    p_date_to: dateTo || null,
+    p_date_from: dateFrom || undefined,
+    p_date_to: dateTo || undefined,
     p_limit: limit,
   });
   if (error) return [];

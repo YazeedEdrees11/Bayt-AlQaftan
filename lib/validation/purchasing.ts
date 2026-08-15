@@ -69,7 +69,7 @@ const optionalText = (max: number, label: string) =>
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional()
-    .transform((value) => value ?? null);
+    .transform((value) => value ?? undefined);
 
 const paymentMethod = z.enum(
   PURCHASE_PAYMENT_METHODS as unknown as [

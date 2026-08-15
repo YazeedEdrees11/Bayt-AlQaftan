@@ -237,5 +237,5 @@ export function getNavTitle(pathname: string): string | null {
     )
     .sort((a, b) => b.href.length - a.href.length)[0];
 
-  return match?.label ?? null;
+  return match?.label ?? undefined;
 }

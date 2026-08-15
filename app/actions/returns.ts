@@ -208,7 +208,7 @@ export async function createReturnAction(
     metadata: {
       return_number: result.return_number,
       sale_number: result.sale_number,
-      reason: payload.reason ?? null,
+      reason: payload.reason ?? undefined,
       items: result.item_count,
       quantities: payload.items.map((i) => ({
         sale_item_id: i.sale_item_id,
@@ -282,8 +282,8 @@ export async function addRefundAction(
       return_number: result.return_number,
       method: payload.refund_method,
       amount: payload.amount,
-      bank_name: payload.bank_name ?? null,
-      transfer_reference: payload.transfer_reference ?? null,
+      bank_name: payload.bank_name ?? undefined,
+      transfer_reference: payload.transfer_reference ?? undefined,
       refunded_total: result.refunded_amount,
       refund_status: result.refund_status,
     },
@@ -426,7 +426,7 @@ export async function createExchangeAction(
         quantity: item.quantity,
         unit_price: item.unit_price,
       })),
-      reason: payload.reason ?? null,
+      reason: payload.reason ?? undefined,
       settlement_method: payload.settlement_method,
       bank_name: payload.bank_name,
       transfer_reference: payload.transfer_reference,
@@ -675,7 +675,7 @@ export async function recordDamageAction(
     metadata: {
       sku: result.sku,
       quantity: result.quantity,
-      notes: parsed.data.notes ?? null,
+      notes: parsed.data.notes ?? undefined,
     },
   });
 
@@ -698,7 +698,7 @@ export async function searchSalesForReturnAction(
   // Only completed sales can be returned against, so the picker never offers a
   // draft or a cancelled sale the RPC would then refuse.
   const { data, error } = await supabase.rpc("search_sales", {
-    p_search: search.trim() || null,
+    p_search: search.trim() || undefined,
     p_status: "COMPLETED",
     p_limit: 20,
   });

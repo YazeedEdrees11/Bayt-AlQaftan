@@ -144,7 +144,7 @@ export async function getSupplierById(id: string): Promise<Supplier | null> {
     console.error("[catalog] getSupplierById:", error.message);
     throw new Error("تعذر تحميل بيانات المورد.");
   }
-  return (data as Supplier) ?? null;
+  return (data as Supplier) ?? undefined;
 }
 
 /** How many variants name this supplier as their default. */
@@ -186,13 +186,13 @@ export async function listProducts(
   const size = normalizePageSize(params.perPage);
 
   const { data, error } = await supabase.rpc("search_products", {
-    p_search: params.search?.trim() || null,
-    p_category_id: params.categoryId || null,
-    p_brand: params.brand || null,
+    p_search: params.search?.trim() || undefined,
+    p_category_id: params.categoryId || undefined,
+    p_brand: params.brand || undefined,
     p_status: params.status ?? "ALL",
     p_stock_status: params.stockStatus ?? "ALL",
-    p_min_price: params.minPrice ?? null,
-    p_max_price: params.maxPrice ?? null,
+    p_min_price: params.minPrice ?? undefined,
+    p_max_price: params.maxPrice ?? undefined,
     p_sort: normalizeSort(params.sort),
     p_low_stock_threshold: LOW_STOCK_THRESHOLD,
     p_limit: size,
@@ -214,7 +214,7 @@ export async function listProducts(
   const items: ProductListItem[] = rows.map((row) => ({
     ...row,
     image_url: row.primary_image_path
-      ? (urls.get(row.primary_image_path) ?? null)
+      ? (urls.get(row.primary_image_path) ?? undefined)
       : null,
   }));
 
@@ -303,8 +303,8 @@ export async function getProductById(
       ...variant,
       current_stock: stockByVariant.get(variant.id) ?? 0,
       damaged_quantity: damagedByVariant.get(variant.id) ?? 0,
-      supplier_name: variant.supplier?.name ?? null,
-      image_url: path ? (urls.get(path) ?? null) : null,
+      supplier_name: variant.supplier?.name ?? undefined,
+      image_url: path ? (urls.get(path) ?? undefined) : null,
     };
   });
 
@@ -328,11 +328,11 @@ export async function getProductById(
 
   return {
     ...baseProduct,
-    category: category ?? null,
+    category: category ?? undefined,
     variants,
     images: images.map((image) => ({
       ...image,
-      url: urls.get(image.storage_path) ?? null,
+      url: urls.get(image.storage_path) ?? undefined,
     })),
     total_stock: totalStock,
     stock_value: stockValue,
@@ -403,14 +403,14 @@ export async function getVariantById(
     ...variant,
     current_stock: stock?.current_stock ?? 0,
     damaged_quantity: stock?.damaged_quantity ?? 0,
-    supplier_name: supplier?.name ?? null,
+    supplier_name: supplier?.name ?? undefined,
     image_url: image?.storage_path
-      ? (urls.get(image.storage_path) ?? null)
+      ? (urls.get(image.storage_path) ?? undefined)
       : null,
     product: {
       id: product?.id ?? row.product_id,
       name: product?.name ?? "",
-      category_name: product?.category?.name ?? null,
+      category_name: product?.category?.name ?? undefined,
     },
   };
 }
@@ -466,7 +466,7 @@ export async function getVariantTransactions(
 
   return rows.map((row) => ({
     ...row,
-    actor_name: row.created_by ? (names.get(row.created_by) ?? null) : null,
+    actor_name: row.created_by ? (names.get(row.created_by) ?? undefined) : null,
   }));
 }
 
@@ -495,11 +495,11 @@ export async function listInventory(
   const size = normalizePageSize(params.perPage);
 
   const { data, error } = await supabase.rpc("search_inventory", {
-    p_search: params.search?.trim() || null,
-    p_category_id: params.categoryId || null,
-    p_supplier_id: params.supplierId || null,
-    p_color: params.color || null,
-    p_size: params.size || null,
+    p_search: params.search?.trim() || undefined,
+    p_category_id: params.categoryId || undefined,
+    p_supplier_id: params.supplierId || undefined,
+    p_color: params.color || undefined,
+    p_size: params.size || undefined,
     p_stock_status: params.stockStatus ?? "ALL",
     p_low_stock_threshold: LOW_STOCK_THRESHOLD,
     p_limit: size,
@@ -521,7 +521,7 @@ export async function listInventory(
   const items: InventoryListItem[] = rows.map((row) => ({
     ...row,
     image_url: row.primary_image_path
-      ? (urls.get(row.primary_image_path) ?? null)
+      ? (urls.get(row.primary_image_path) ?? undefined)
       : null,
   }));
 

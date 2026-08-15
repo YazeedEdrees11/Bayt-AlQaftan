@@ -59,7 +59,7 @@ const optionalText = (max: number, label: string) =>
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional()
-    .transform((value) => value ?? null);
+    .transform((value) => value ?? undefined);
 
 const phone = (label: string) =>
   z
@@ -72,7 +72,7 @@ const phone = (label: string) =>
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional()
-    .transform((value) => value ?? null);
+    .transform((value) => value ?? undefined);
 
 const paymentMethod = z.enum(
   SALE_PAYMENT_METHODS as unknown as [SalePaymentMethod, ...SalePaymentMethod[]],
@@ -103,7 +103,7 @@ export const customerSchema = z.object({
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional()
-    .transform((value) => value ?? null),
+    .transform((value) => value ?? undefined),
   address: optionalText(400, "العنوان"),
   notes: optionalText(1000, "الملاحظات"),
   is_active: z.boolean().default(true),
@@ -179,7 +179,7 @@ export type CreatableSaleStatus = (typeof CREATABLE_SALE_STATUSES)[number];
 
 export const createSaleSchema = z.object({
   /** Omitted or null means a walk-in — no customer record is created. */
-  customer_id: uuid.nullable().optional().transform((v) => v ?? null),
+  customer_id: uuid.nullable().optional().transform((v) => v ?? undefined),
   sale_date: isoDate,
   discount: money("الخصم").default(0),
   notes: optionalText(1000, "الملاحظات"),
